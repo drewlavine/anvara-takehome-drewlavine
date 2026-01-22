@@ -19,9 +19,8 @@ export function debounce(fn: () => void, delay: number): () => void {
 }
 
 // Parse query string parameters
-// FIXME: Return type uses 'any' - should be Record<string, string>
-export function parseQueryString(queryString: string): Record<string, any> {
-  const params: any = {};
+export function parseQueryString(queryString: string): Record<string, string> {
+  const params: Record<string, string> = {};
   const searchParams = new URLSearchParams(queryString);
 
   searchParams.forEach((value, key) => {
@@ -41,14 +40,14 @@ export function truncate(text: string, maxLength: number): string {
 }
 
 // Class name helper (simple cn alternative)
-// FIXME: 'classes' should be typed more strictly
-export function cn(...classes: any[]): string {
+type Classes = string | number | boolean | undefined | null;
+
+export function cn(...classes: Classes[]): string {
   return classes.filter(Boolean).join(' ');
 }
 
 // Sleep utility for testing/debugging
-// BUG: Missing return type annotation
-export const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+export const sleep = (ms: number): Promise<number> => new Promise((resolve) => setTimeout(resolve, ms));
 
 // Deep clone an object
 // NOTE: This doesn't handle circular references, dates, or functions
@@ -57,24 +56,23 @@ export function deepClone<T>(obj: T): T {
 }
 
 // Logger that only logs in development
-// FIXME: Logger methods use 'any' - should be typed as 'unknown'
 export const logger = {
-  log: (...args: any[]) => {
+  log: (...args: unknown[]) => {
     if (process.env.NODE_ENV === 'development') {
       console.log('[App]', ...args);
     }
   },
-  error: (...args: any[]) => {
+  error: (...args: unknown[]) => {
     console.error('[App Error]', ...args);
   },
-  warn: (...args: any[]) => {
+  warn: (...args: unknown[]) => {
     console.warn('[App Warning]', ...args);
   },
 };
 
 // TODO: Add a proper date formatting utility
 // BUG: Doesn't handle timezone or invalid dates
-export function formatRelativeTime(date: any): string {
+export function formatRelativeTime(date: Date | string | number): string {
   const now = new Date();
   const then = new Date(date);
   const diff = now.getTime() - then.getTime();
