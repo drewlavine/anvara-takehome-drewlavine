@@ -1,10 +1,7 @@
 // Frontend utility functions
 
 // Format a price for display
-// FIXME: 'price' has implicit 'any' type - should be 'number'
-// BUG: unusedFormatter is declared but never used
-export function formatPrice(price: any, locale = 'en-US') {
-  const unusedFormatter = new Intl.NumberFormat(locale);
+export function formatPrice(price: number, locale = 'en-US'): string {
   return new Intl.NumberFormat(locale, {
     style: 'currency',
     currency: 'USD',
@@ -12,10 +9,10 @@ export function formatPrice(price: any, locale = 'en-US') {
 }
 
 // Debounce function for search inputs
-// FIXME: Multiple 'any' types - fn should be typed, return type should be specified
-export function debounce(fn: any, delay: number) {
-  let timeoutId: any;
-  return (...args: any[]) => {
+export function debounce(fn: () => void, delay: number): () => void {
+  // Using ReturnType here let's me be independent of platform (node vs window), wanted to use NodeJS.timeout, but it would require messing with the lint file and i didn't want to do that
+  let timeoutId: ReturnType<typeof setTimeout>;
+  return (...args: Parameters<typeof fn>) => {
     clearTimeout(timeoutId);
     timeoutId = setTimeout(() => fn(...args), delay);
   };
@@ -38,9 +35,7 @@ export function parseQueryString(queryString: string): Record<string, any> {
 export const isClient = typeof window !== 'undefined';
 
 // Truncate text with ellipsis
-// BUG: unusedCheck is declared but never used
 export function truncate(text: string, maxLength: number): string {
-  const unusedCheck = text.length > maxLength;
   if (text.length <= maxLength) return text;
   return text.slice(0, maxLength) + '...';
 }

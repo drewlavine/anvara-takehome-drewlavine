@@ -59,7 +59,7 @@ export const buildFilters = (query: any, allowedFields: string[]) => {
 };
 
 // Unused export that should be removed or marked deprecated
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+ 
 export const DEPRECATED_CONFIG = {
   apiVersion: 'v1',
   timeout: 5000,

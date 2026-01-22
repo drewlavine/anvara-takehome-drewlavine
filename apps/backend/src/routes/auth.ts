@@ -24,7 +24,8 @@ router.get('/me', async (req: Request, res: Response) => {
 // GET /api/auth/role/:userId - Get user role based on Sponsor/Publisher records
 router.get('/role/:userId', async (req: Request, res: Response) => {
   try {
-    const { userId } = req.params;
+    // After looking through the code, I came to the conclusion that userId would only ever be a string, so I chose to use a type assertion
+    const { userId } = req.params as { userId: string };
 
     // Check if user is a sponsor
     const sponsor = await prisma.sponsor.findUnique({
