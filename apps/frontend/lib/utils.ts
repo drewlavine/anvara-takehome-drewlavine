@@ -65,7 +65,7 @@ export const logger = {
   },
   error: (...args: unknown[]) => {
     console.error('[App Error]', ...args);
-  },
+},
   warn: (...args: unknown[]) => {
     console.warn('[App Warning]', ...args);
   },
