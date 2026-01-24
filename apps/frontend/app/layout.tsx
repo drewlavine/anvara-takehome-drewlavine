@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import './globals.css';
+import * as React from 'react';
 import { Nav } from './components/nav';
+import { NavErrorBoundary } from './components/nav-error-boundary';
 
 // TODO: Add ErrorBoundary wrapper for graceful error handling
 // TODO: Consider adding a loading.tsx for Suspense boundaries
@@ -20,7 +22,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <body className="min-h-screen antialiased">
-        <Nav />
+        <NavErrorBoundary>
+          <Nav />
+        </NavErrorBoundary>
         <main className="mx-auto max-w-6xl p-4">{children}</main>
       </body>
     </html>

@@ -25,7 +25,7 @@ export function CampaignCard({ campaign }: CampaignCardProps) {
     campaign.budget > 0 ? (Number(campaign.spent) / Number(campaign.budget)) * 100 : 0;
 
   return (
-    <div className="rounded-lg border border-[--color-border] p-4">
+    <div className="rounded-lg border border-[var(--color-border)] p-4">
       <div className="mb-2 flex items-start justify-between">
         <h3 className="font-semibold">{campaign.name}</h3>
         <span
@@ -36,25 +36,27 @@ export function CampaignCard({ campaign }: CampaignCardProps) {
       </div>
 
       {campaign.description && (
-        <p className="mb-3 text-sm text-[--color-muted] line-clamp-2">{campaign.description}</p>
+        <p className="mb-3 text-sm text-[var(--color-muted)] line-clamp-2">
+          {campaign.description}
+        </p>
       )}
 
       <div className="mb-2">
         <div className="flex justify-between text-sm">
-          <span className="text-[--color-muted]">Budget</span>
+          <span className="text-[var(--color-muted)]">Budget</span>
           <span>
             ${Number(campaign.spent).toLocaleString()} / ${Number(campaign.budget).toLocaleString()}
           </span>
         </div>
         <div className="mt-1 h-1.5 rounded-full bg-gray-200">
           <div
-            className="h-1.5 rounded-full bg-[--color-primary]"
+            className="h-1.5 rounded-full bg-[var(--color-primary)]"
             style={{ width: `${Math.min(progress, 100)}%` }}
           />
         </div>
       </div>
 
-      <div className="text-xs text-[--color-muted]">
+      <div className="text-xs text-[var(--color-muted)]">
         {new Date(campaign.startDate).toLocaleDateString()} -{' '}
         {new Date(campaign.endDate).toLocaleDateString()}
       </div>

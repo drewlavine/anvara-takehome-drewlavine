@@ -20,7 +20,7 @@ const typeColors: Record<string, string> = {
 
 export function AdSlotCard({ adSlot }: AdSlotCardProps) {
   return (
-    <div className="rounded-lg border border-[--color-border] p-4">
+    <div className="rounded-lg border border-[var(--color-border)] p-4">
       <div className="mb-2 flex items-start justify-between">
         <h3 className="font-semibold">{adSlot.name}</h3>
         <span className={`rounded px-2 py-0.5 text-xs ${typeColors[adSlot.type] || 'bg-gray-100'}`}>
@@ -29,16 +29,16 @@ export function AdSlotCard({ adSlot }: AdSlotCardProps) {
       </div>
 
       {adSlot.description && (
-        <p className="mb-3 text-sm text-[--color-muted] line-clamp-2">{adSlot.description}</p>
+        <p className="mb-3 text-sm text-[var(--color-muted)] line-clamp-2">{adSlot.description}</p>
       )}
 
       <div className="flex items-center justify-between">
         <span
-          className={`text-sm ${adSlot.isAvailable ? 'text-green-600' : 'text-[--color-muted]'}`}
+          className={`text-sm ${adSlot.isAvailable ? 'text-green-600' : 'text-[var(--color-muted)]'}`}
         >
           {adSlot.isAvailable ? 'Available' : 'Booked'}
         </span>
-        <span className="font-semibold text-[--color-primary]">
+        <span className="font-semibold text-[var(--color-primary)]">
           ${Number(adSlot.basePrice).toLocaleString()}/mo
         </span>
       </div>

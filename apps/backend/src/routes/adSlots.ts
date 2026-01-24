@@ -153,7 +153,7 @@ router.post('/:id/book', async (req: Request, res: Response) => {
 router.post('/:id/unbook', async (req: Request, res: Response) => {
   try {
     // After looking through all of the code, I came to the conclusion that a string[] will never be passed, so I chose to do an inline type assertion
-    const { id } = req.params as { id: string}
+    const { id } = req.params as { id: string };
 
     const updatedSlot = await prisma.adSlot.update({
       where: { id },

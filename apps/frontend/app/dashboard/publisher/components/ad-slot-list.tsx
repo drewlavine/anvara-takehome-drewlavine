@@ -40,7 +40,7 @@ export function AdSlotList() {
   }, [session?.user?.id]);
 
   if (loading) {
-    return <div className="py-8 text-center text-[--color-muted]">Loading ad slots...</div>;
+    return <div className="py-8 text-center text-[var(--color-muted)]">Loading ad slots...</div>;
   }
 
   if (error) {
@@ -49,7 +49,7 @@ export function AdSlotList() {
 
   if (adSlots.length === 0) {
     return (
-      <div className="rounded-lg border border-dashed border-[--color-border] p-8 text-center text-[--color-muted]">
+      <div className="rounded-lg border border-dashed border-[var(--color-border)] p-8 text-center text-[var(--color-muted)]">
         No ad slots yet. Create your first ad slot to start earning.
       </div>
     );

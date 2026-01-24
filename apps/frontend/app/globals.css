@@ -32,6 +32,45 @@
   --spacing-container: 1rem;
 }
 
+/* Normally i wouldn't do this in globals, but won't be doing much most likely */
+.login-button-disabled {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.nav-login-disabled-container {
+  position: relative;
+
+}
+
+.nav-login-disabled-container > .tooltip {
+  position: absolute;
+  display: none;
+  background-color: var(--color-error);
+  width: 200px;
+  left: 50%;
+  transform: translateX(-50%);
+  top: 40px;
+  border-radius: 10px;
+  padding: 10px;
+  color: white;
+  text-align: center; /* Optional: centers the text inside too */
+}
+
+.nav-login-disabled-container > .tooltip::before {
+  position: absolute;
+  content: '';
+  border-width: 10px;
+  border-style: solid;
+  border-color: transparent transparent red transparent;
+  top: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.nav-login-disabled-container:hover > .tooltip {
+  display: block;
+}
+
 /* Dark mode support - TODO: Implement dark mode toggle */
 @media (prefers-color-scheme: dark) {
   :root {
