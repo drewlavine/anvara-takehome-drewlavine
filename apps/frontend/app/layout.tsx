@@ -4,7 +4,6 @@ import * as React from 'react';
 import { Nav } from './components/nav';
 import { NavErrorBoundary } from './components/nav-error-boundary';
 
-// TODO: Add ErrorBoundary wrapper for graceful error handling
 // TODO: Consider adding a loading.tsx for Suspense boundaries
 // TODO: Add Open Graph metadata for social media sharing
 // TODO: Add Twitter Card metadata

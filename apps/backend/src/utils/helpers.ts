@@ -67,3 +67,150 @@ export function formatDate(date: string | number | Date): string {
   // BUG: Doesn't handle invalid dates
   return new Date(date).toLocaleDateString();
 }
+
+type FieldValidation = {
+  canBeNull: boolean;
+  mustBePositive: boolean;
+  requiredInPost: boolean;
+  label: string;
+};
+// Validate campaign fields
+
+// Chose not to include created-at/updated-at in this since users shouldn't be able to update that
+const campaignFieldValidations: Record<string, FieldValidation> = {
+  id: { canBeNull: false, mustBePositive: false, requiredInPost: false, label: 'ID' },
+  name: { canBeNull: false, mustBePositive: false, requiredInPost: true, label: 'Name' },
+  budget: { canBeNull: false, mustBePositive: true, requiredInPost: true, label: 'Budget' },
+  spent: { canBeNull: false, mustBePositive: true, requiredInPost: false, label: 'Spent' },
+  startDate: { canBeNull: false, mustBePositive: false, requiredInPost: true, label: 'Start date' },
+  endDate: { canBeNull: false, mustBePositive: false, requiredInPost: true, label: 'End date' },
+  targetCategories: {
+    canBeNull: false,
+    mustBePositive: false,
+    requiredInPost: false,
+    label: 'Target categories',
+  },
+  targetRegions: {
+    canBeNull: false,
+    mustBePositive: false,
+    requiredInPost: false,
+    label: 'Target regions',
+  },
+  sponsor: { canBeNull: false, mustBePositive: false, requiredInPost: false, label: 'Sponsor' },
+  creatives: { canBeNull: false, mustBePositive: false, requiredInPost: false, label: 'Creatives' },
+  placements: {
+    canBeNull: false,
+    mustBePositive: false,
+    requiredInPost: false,
+    label: 'Placements',
+  },
+  cpmRate: { canBeNull: true, mustBePositive: true, requiredInPost: false, label: 'CPM rate' },
+  cpcRate: { canBeNull: true, mustBePositive: true, requiredInPost: false, label: 'CPC rate' },
+  sponsorId: { canBeNull: false, mustBePositive: false, requiredInPost: true, label: 'Sponsor ID' },
+};
+
+export function validateCampaignFields(data: Record<string, unknown>): string | null {
+  for (const [field, validation] of Object.entries(campaignFieldValidations)) {
+    if (field in data) {
+      const value = data[field];
+      if (validation.requiredInPost && !value) {
+        console.log('missing required field:', field);
+        return `${validation.label} is required`;
+      }
+
+      if (value === null && !validation.canBeNull) {
+        console.log('null not allowed for field:', field);
+        return `${validation.label} cannot be null`;
+      }
+
+      if (validation.mustBePositive && typeof value === 'number' && value < 0) {
+        console.log('negative value for field:', field);
+        return `${validation.label} must be a positive value`;
+      }
+    }
+  }
+  return null;
+}
+
+// Validate Ad Slots fields
+// Chose not to include created-at/updated-at in this since users shouldn't be able to update that
+const adSlotsFieldValidations: Record<string, FieldValidation> = {
+  id: { canBeNull: false, mustBePositive: false, requiredInPost: false, label: 'ID' },
+  name: { canBeNull: false, mustBePositive: false, requiredInPost: true, label: 'Name' },
+  description: {
+    canBeNull: true,
+    mustBePositive: false,
+    requiredInPost: false,
+    label: 'Description',
+  },
+  type: { canBeNull: false, mustBePositive: false, requiredInPost: true, label: 'Type' },
+  position: { canBeNull: true, mustBePositive: false, requiredInPost: false, label: 'Position' },
+  width: { canBeNull: true, mustBePositive: false, requiredInPost: false, label: 'Width' },
+  height: {
+    canBeNull: true,
+    mustBePositive: false,
+    requiredInPost: false,
+    label: 'Height',
+  },
+  basePrice: {
+    canBeNull: false,
+    mustBePositive: true,
+    requiredInPost: true,
+    label: 'Base price',
+  },
+  cpmFloor: {
+    canBeNull: true,
+    mustBePositive: true,
+    requiredInPost: false,
+    label: 'CPM floor',
+  },
+  isAvailable: {
+    canBeNull: false,
+    mustBePositive: false,
+    requiredInPost: false,
+    label: 'Is available',
+  },
+  publisher: {
+    canBeNull: false,
+    mustBePositive: false,
+    requiredInPost: true,
+    label: 'Publisher',
+  },
+  placements: {
+    canBeNull: false,
+    mustBePositive: false,
+    requiredInPost: false,
+    label: 'Placements',
+  },
+};
+
+export function validateAdSlotsFields(data: Record<string, unknown>): string | null | undefined {
+  for (const [field, validation] of Object.entries(adSlotsFieldValidations)) {
+    if (field in data) {
+      const value = data[field];
+      if (validation.requiredInPost && !value) {
+        console.log('missing required field:', field);
+        return `${validation.label} is required`;
+      }
+
+      if (value === null && !validation.canBeNull) {
+        console.log('null not allowed for field:', field);
+        return `${validation.label} cannot be null`;
+      }
+
+      if (validation.mustBePositive && typeof value === 'number' && value < 0) {
+        console.log('negative value for field:', field);
+        return `${validation.label} must be a positive value`;
+      }
+
+      if (field === 'type') {
+        const validTypes = ['DISPLAY', 'VIDEO', 'NATIVE', 'NEWSLETTER', 'PODCAST'];
+        if (typeof value === 'string' && !validTypes.includes(value)) {
+          console.log('invalid enum value for field:', field);
+          return `${validation.label} must be one of: ${validTypes.join(', ')}`;
+        }
+      }
+    }
+  }
+  return null;
+}

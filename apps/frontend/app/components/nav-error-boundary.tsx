@@ -2,7 +2,6 @@
 
 import * as React from 'react';
 import Link from 'next/link';
-import { useRef, useState } from 'react';
 
 interface Props {
   children?: React.ReactNode;
@@ -14,7 +13,6 @@ interface State {
 }
 
 export class NavErrorBoundary extends React.Component<Props, State> {
-
   constructor(props: Props) {
     super(props);
     this.state = { hasError: false };
