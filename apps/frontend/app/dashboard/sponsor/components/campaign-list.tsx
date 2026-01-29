@@ -1,10 +1,12 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { getCampaigns } from '@/lib/api';
+//import { getCampaigns } from '@/lib/api';
+import { getCampaigns } from '@/lib/actions';
 import { authClient } from '@/auth-client';
 import { CampaignCard } from './campaign-card';
 import { Campaign } from '@/lib/types';
+import { useFormContext } from '@/lib/form-context';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4291';
 
@@ -15,6 +17,7 @@ export function CampaignList() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { data: session } = authClient.useSession();
+  const { campaignFormSuccess, setCampaignFormSuccess } = useFormContext();
 
   // TODO: Add refetch on tab focus for better UX
   // TODO: Add optimistic updates when creating/editing campaigns
@@ -42,6 +45,30 @@ export function CampaignList() {
 
     loadCampaigns();
   }, [session?.user?.id]);
+
+  // Reload campaigns when a new one is created
+  useEffect(() => {
+    if (campaignFormSuccess) {
+      async function reloadCampaigns() {
+        if (!session?.user?.id) return;
+
+        try {
+          const roleRes = await fetch(`${API_URL}/api/auth/role/${session.user.id}`);
+          const roleData = await roleRes.json();
+
+          if (roleData.sponsorId) {
+            const data = await getCampaigns(roleData.sponsorId);
+            setCampaigns(data);
+          }
+        } catch {
+          // Keep existing data if reload fails
+        }
+      }
+
+      reloadCampaigns();
+      setCampaignFormSuccess(false); // Reset the flag
+    }
+  }, [campaignFormSuccess, session?.user?.id, setCampaignFormSuccess]);
 
   if (loading) {
     return <div className="py-8 text-center text-[var(--color-muted)]">Loading campaigns...</div>;

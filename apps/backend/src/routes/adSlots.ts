@@ -8,7 +8,6 @@ const router: IRouter = Router();
 // GET /api/ad-slots - List available ad slot
 router.get('/', requireAuth, async (req: AuthRequest, res: Response) => {
   try {
-    console.log('req', req);
     const { type, available } = req.query;
     const user = req.user;
     if (!user || !user.publisherId) {
@@ -292,11 +291,14 @@ router.delete('/:id', requireAuth, async (req: AuthRequest, res: Response) => {
       },
     });
 
+    console.log('adSlot to delete:', adSlot);
+
     if (!adSlot) {
       // Returns 404 for both "not found" and "not owned"
       return res.status(404).json({ error: 'Ad slot not found' });
     }
 
+    console.log('adSlot publisherId:', adSlot.publisherId, 'user publisherId:', user.publisherId);
     if (adSlot.publisherId !== user.publisherId) {
       res.status(403).json({ error: 'Forbidden: Cannot delete ad slot for another publisher' });
       return;
@@ -305,7 +307,7 @@ router.delete('/:id', requireAuth, async (req: AuthRequest, res: Response) => {
     await prisma.adSlot.delete({
       where: { id },
     });
-    res.status(204).json('Ad slot deleted successfully');
+    res.status(204).json({ message: 'Ad slot deleted successfully' });
   } catch (error) {
     console.error('Error deleting ad slot:', error);
     res.status(500).json({ error: 'Failed to delete ad slot' });

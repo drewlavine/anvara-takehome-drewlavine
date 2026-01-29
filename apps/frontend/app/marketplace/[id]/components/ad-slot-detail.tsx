@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { getAdSlot } from '@/lib/api';
+import { getAdSlot } from '@/lib/actions';
 import { authClient } from '@/auth-client';
 
 interface AdSlot {

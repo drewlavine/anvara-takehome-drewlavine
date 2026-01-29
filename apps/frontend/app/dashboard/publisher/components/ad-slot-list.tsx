@@ -1,10 +1,11 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { getAdSlots } from '@/lib/api';
+import { getAdSlots } from '@/lib/actions';
 import { authClient } from '@/auth-client';
 import { AdSlotCard } from './ad-slot-card';
 import { AdSlot } from '@/lib/types';
+import { useFormContext } from '@/lib/form-context';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4291';
 
@@ -13,6 +14,7 @@ export function AdSlotList() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { data: session } = authClient.useSession();
+  const { adSlotFormSuccess, setAdSlotFormSuccess } = useFormContext();
 
   useEffect(() => {
     async function loadAdSlots() {
@@ -56,10 +58,24 @@ export function AdSlotList() {
   }
 
   return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-      {adSlots.map((slot) => (
-        <AdSlotCard key={slot.id} adSlot={slot} />
-      ))}
-    </div>
+    <>
+      {adSlotFormSuccess && (
+        <div className="mb-4 flex items-center justify-between rounded-lg border border-green-200 bg-green-50 p-4 text-green-800 ">
+          <span>Ad slot created successfully</span>
+          <button
+            onClick={() => setAdSlotFormSuccess(false)}
+            className="ml-4 text-green-600 hover:text-green-800"
+            aria-label="Dismiss notification"
+          >
+            ✕
+          </button>
+        </div>
+      )}
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {adSlots.map((slot) => (
+          <AdSlotCard key={slot.id} adSlot={slot} />
+        ))}
+      </div>
+    </>
   );
 }

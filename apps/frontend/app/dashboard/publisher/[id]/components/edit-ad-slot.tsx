@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { getAdSlot } from '@/lib/api';
+import { getAdSlot, deleteAdSlot } from '@/lib/actions';
 import { authClient } from '@/auth-client';
+import { redirect } from 'next/dist/client/components/navigation';
 
 interface AdSlot {
   id: string;
@@ -52,6 +53,8 @@ export function EditAdSlot({ id }: Props) {
   const [roleLoading, setRoleLoading] = useState(true);
   const [message, setMessage] = useState('');
   const [booking, setBooking] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [deletingError, setDeletingError] = useState<string | null>(null);
   const [bookingSuccess, setBookingSuccess] = useState(false);
   const [bookingError, setBookingError] = useState<string | null>(null);
 
@@ -84,6 +87,35 @@ export function EditAdSlot({ id }: Props) {
       })
       .catch(() => setRoleLoading(false));
   }, [id]);
+
+  const handleDelete = async () => {
+    if (!roleInfo?.publisherId || !adSlot) return;
+
+    setDeleting(true);
+    setDeletingError(null);
+
+    try {
+      const response = await deleteAdSlot(adSlot.id);
+      console.log('Delete response success:', response.success);
+      console.log('Delete response:', response);
+
+      if (!response.success) {
+        setDeletingError(response.error || 'Failed to delete ad slot');
+        return;
+      }
+
+      setMessage('Ad slot deleted successfully');
+      // Redirect or update state after successful deletion
+      setTimeout(() => {
+        redirect('/dashboard/publisher');
+      }, 1500);
+    } catch (error) {
+      console.error('Delete error:', error);
+      setDeletingError(error instanceof Error ? error.message : 'Failed to delete ad slot');
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   const handleBooking = async () => {
     if (!roleInfo?.sponsorId || !adSlot) return;
@@ -228,7 +260,7 @@ export function EditAdSlot({ id }: Props) {
 
             {roleLoading ? (
               <div className="py-4 text-center text-[var(--color-muted)]">Loading...</div>
-            ) : roleInfo?.role === 'sponsor' && roleInfo?.sponsorId ? (
+            ) : roleInfo?.role === 'publisher' && roleInfo?.publisherId ? (
               <div className="space-y-4">
                 <div>
                   <label className="mb-1 block text-sm font-medium text-[var(--color-muted)]">
@@ -253,13 +285,22 @@ export function EditAdSlot({ id }: Props) {
                   />
                 </div>
                 {bookingError && <p className="text-sm text-red-600">{bookingError}</p>}
-                <button
-                  onClick={handleBooking}
-                  disabled={booking}
-                  className="w-full rounded-lg bg-[var(--color-primary)] px-4 py-3 font-semibold text-white transition-colors hover:opacity-90 disabled:opacity-50"
-                >
-                  {booking ? 'Booking...' : 'Book This Placement'}
-                </button>
+                <div className="grid grid-cols-2 gap-4">
+                  <button
+                    onClick={handleBooking}
+                    disabled={booking}
+                    className="w-full rounded-lg bg-[var(--color-primary)] px-4 py-3 font-semibold text-white transition-colors hover:opacity-90 disabled:opacity-50"
+                  >
+                    {booking ? 'Saving...' : 'Save'}
+                  </button>
+                  <button
+                    onClick={handleDelete}
+                    disabled={booking}
+                    className="w-full rounded-lg bg-[var(--color-error)] px-4 py-3 font-semibold text-white transition-colors hover:opacity-90 disabled:opacity-50"
+                  >
+                    {booking ? 'Deleting...' : 'Delete Booking'}
+                  </button>
+                </div>
               </div>
             ) : (
               <div>

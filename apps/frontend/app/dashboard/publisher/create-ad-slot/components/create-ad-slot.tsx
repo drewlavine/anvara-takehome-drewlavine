@@ -1,0 +1,168 @@
+'use client';
+
+import { createAdSlot } from '@/lib/actions';
+import { useActionState, useRef, useState } from 'react';
+import { useFormStatus } from 'react-dom';
+import { useEffect } from 'react';
+import { redirect } from 'next/navigation';
+import { useFormContext } from '@/lib/form-context';
+import { authClient } from '@/auth-client';
+
+
+interface User {
+  id: string;
+  name: string;
+  email: string;
+}
+
+interface RoleInfo {
+  role: 'sponsor' | 'publisher' | null;
+  sponsorId?: string;
+  publisherId?: string;
+  name?: string;
+}
+function SubmitButton() {
+  const { pending } = useFormStatus();
+
+
+
+
+  return (
+    <button
+      className="w-10 rounded-lg bg-[var(--color-primary)] px-4 py-2 font-semibold text-white hover:opacity-90 disabled:opacity-50"
+      disabled={pending}
+      type="submit"
+    >
+      {pending ? 'Creating...' : 'Create Ad Slot'}
+    </button>
+  );
+}
+
+
+export function CreateAdSlot() {
+  const [state, formAction] = useActionState(createAdSlot, {});
+  const { setAdSlotFormSuccess } = useFormContext();
+  const selectRef = useRef<HTMLSelectElement>(null);
+  const [user, setUser] = useState<User | null>(null);
+  const [roleInfo, setRoleInfo] = useState<RoleInfo | null>(null);
+  const [roleLoading, setRoleLoading] = useState(true);
+
+  useEffect(() => {
+    authClient
+          .getSession()
+          .then(({ data }) => {
+            if (data?.user) {
+              const sessionUser = data.user as User;
+              setUser(sessionUser);
+
+              // Fetch role info from backend
+              fetch(
+                `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4291'}/api/auth/role/${sessionUser.id}`
+              )
+                .then((res) => res.json())
+                .then((data) => setRoleInfo(data))
+                .catch(() => setRoleInfo(null))
+                .finally(() => setRoleLoading(false));
+            } else {
+              setRoleLoading(false);
+            }
+          })
+          .catch(() => setRoleLoading(false));
+  }, [])
+
+
+
+  useEffect(() => {
+
+    if (state?.error && state.formData?.get('type')) {
+      const typeValue = state.formData.get('type') as string;
+
+      if (selectRef.current) {
+        selectRef.current.value = typeValue;
+      }
+    }
+    if (state?.success) {
+      setAdSlotFormSuccess(true);
+      redirect('/dashboard/publisher');
+    }
+  }, [state, setAdSlotFormSuccess]);
+
+  const handleBack = () => {
+
+  };
+
+  return (
+    <div className="space-y-6">
+      <button onClick={handleBack} className="text-[var(--color-primary)] hover:underline">
+        ← Back to Ad Slots
+      </button>
+      <div className="mb-4">
+        <h1 className="text-2xl font-bold">Create Ad Slot</h1>
+      </div>
+
+      <div className="rounded-lg border border-[var(--color-border)] p-6 max-w-md">
+        <form action={formAction}>
+          <div className="mb-4 flex flex-col items-start justify-between space-y-4">
+            <div className="grow max-w-md w-full">
+              <label className="block text-sm/6 font-medium text-white" htmlFor="name">
+                Ad Slot Name*
+              </label>
+              <input
+                className="rounded-lg border border-[var(--color-border)] placeholder:text-slate-400 text-slate-700 text-sm border-slate-200 px-3 py-1 w-full"
+                type="text"
+                name="name"
+                defaultValue={state.formData?.get("name") as string|| ''}
+                required
+              />
+            </div>
+            <div className="grow max-w-md w-full">
+              <label className="block text-sm/6 font-medium text-white" htmlFor="description">
+                Description
+              </label>
+              <input
+                className="rounded-lg border border-[var(--color-border)] placeholder:text-slate-400 text-slate-700 text-sm border-slate-200 px-3 py-3 w-full"
+                type="text"
+                name="description"
+                defaultValue={state.formData?.get("description") as string|| ''}
+              />
+            </div>
+            <div className="grow max-w-md w-full">
+              <label className="block text-sm/6 font-medium text-white" htmlFor="type">
+                Type
+              </label>
+                <select
+                  ref={selectRef}
+                  name="type"
+                  className="mt-1 w-full rounded border border-[var(--color-border)] bg-white px-3 py-2 text-gray-900"
+                >
+                  <option key="DISPLAY" value="DISPLAY">Display</option>
+                  <option key="VIDEO" value="VIDEO">Video</option>
+                  <option key="NATIVE" value="NATIVE">Native</option>
+                  <option key="NEWSLETTER" value="NEWSLETTER">Newsletter</option>
+                  <option key="PODCAST" value="PODCAST">Podcast</option>
+                </select>
+            </div>
+            <div className="grow max-w-md w-full">
+              <label className="block text-sm/6 font-medium text-white" htmlFor="basePrice">
+                Base Price*
+              </label>
+              <input
+                className="rounded-lg border border-[var(--color-border)] placeholder:text-slate-400 text-slate-700 text-sm border-slate-200 px-3 py-3 w-full"
+                type="number"
+                inputMode="decimal"
+                name="basePrice"
+                defaultValue={(state.formData?.get("basePrice") as unknown) as number || undefined}
+                required
+              />
+              <input type="hidden" name="publisherId" value={roleInfo?.publisherId || ''} />
+            </div>
+
+            <SubmitButton  />
+
+            {state?.error && <p className="text-red-600 mt-2">{state.error}</p>}
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}

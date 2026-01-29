@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { getAdSlots } from '@/lib/api';
+import { getAdSlots } from '@/lib/actions';
 import { AdSlot } from '@/lib/types';
 
 const typeColors: Record<string, string> = {

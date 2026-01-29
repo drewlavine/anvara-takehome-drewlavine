@@ -1,4 +1,4 @@
-import { EditAdSlot } from "./components/edit-ad-slot";
+import { EditAdSlot } from './components/edit-ad-slot';
 interface Props {
   params: Promise<{ id: string }>;
 }

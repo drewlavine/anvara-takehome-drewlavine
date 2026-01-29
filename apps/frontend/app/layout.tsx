@@ -3,6 +3,7 @@ import './globals.css';
 import * as React from 'react';
 import { Nav } from './components/nav';
 import { NavErrorBoundary } from './components/nav-error-boundary';
+import { FormProvider } from '@/lib/form-context';
 
 // TODO: Consider adding a loading.tsx for Suspense boundaries
 // TODO: Add Open Graph metadata for social media sharing
@@ -21,10 +22,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <body className="min-h-screen antialiased">
-        <NavErrorBoundary>
-          <Nav />
-        </NavErrorBoundary>
-        <main className="mx-auto max-w-6xl p-4">{children}</main>
+        <FormProvider>
+          <NavErrorBoundary>
+            <Nav />
+          </NavErrorBoundary>
+          <main className="mx-auto max-w-6xl p-4">{children}</main>
+        </FormProvider>
       </body>
     </html>
   );
