@@ -29,7 +29,7 @@ function SubmitButton() {
 
   return (
     <button
-      className="w-10 rounded-lg bg-[var(--color-primary)] px-4 py-2 font-semibold text-white hover:opacity-90 disabled:opacity-50"
+      className="rounded-lg bg-[var(--color-secondary)] px-4 py-2 font-semibold text-white hover:opacity-90 disabled:opacity-50"
       disabled={pending}
       type="submit"
     >
@@ -46,6 +46,7 @@ export function CreateAdSlot() {
   const [user, setUser] = useState<User | null>(null);
   const [roleInfo, setRoleInfo] = useState<RoleInfo | null>(null);
   const [roleLoading, setRoleLoading] = useState(true);
+  const [isFormDirty, setIsFormDirty] = useState(false);
 
   useEffect(() => {
     authClient
@@ -88,7 +89,14 @@ export function CreateAdSlot() {
   }, [state, setAdSlotFormSuccess]);
 
   const handleBack = () => {
+    if (isFormDirty) {
+      const confirmLeave = window.confirm('You have unsaved changes. Are you sure you want to leave?');
+      if (!confirmLeave) {
+        return;
+      }
+    }
 
+    redirect('/dashboard/publisher');
   };
 
   return (
@@ -100,7 +108,7 @@ export function CreateAdSlot() {
         <h1 className="text-2xl font-bold">Create Ad Slot</h1>
       </div>
 
-      <div className="rounded-lg border border-[var(--color-border)] p-6 max-w-md">
+      <div className="rounded-lg border border-[var(--color-border)] p-6 max-w-1/2">
         <form action={formAction}>
           <div className="mb-4 flex flex-col items-start justify-between space-y-4">
             <div className="grow max-w-md w-full">
@@ -108,10 +116,11 @@ export function CreateAdSlot() {
                 Ad Slot Name*
               </label>
               <input
-                className="rounded-lg border border-[var(--color-border)] placeholder:text-slate-400 text-slate-700 text-sm border-slate-200 px-3 py-1 w-full"
+                className="rounded-lg border border-[var(--color-border)] placeholder:text-white text-white text-sm border-slate-200 px-3 py-1 w-full"
                 type="text"
                 name="name"
                 defaultValue={state.formData?.get("name") as string|| ''}
+                onChange={(e) => setIsFormDirty(e.target.value !== '')}
                 required
               />
             </div>
@@ -119,11 +128,11 @@ export function CreateAdSlot() {
               <label className="block text-sm/6 font-medium text-white" htmlFor="description">
                 Description
               </label>
-              <input
-                className="rounded-lg border border-[var(--color-border)] placeholder:text-slate-400 text-slate-700 text-sm border-slate-200 px-3 py-3 w-full"
-                type="text"
+              <textarea
+                className="rounded-lg border border-[var(--color-border)] placeholder:text-white text-white text-sm border-slate-200 px-3 py-3 w-full"
                 name="description"
                 defaultValue={state.formData?.get("description") as string|| ''}
+                onChange={(e) => setIsFormDirty(e.target.value !== '')}
               />
             </div>
             <div className="grow max-w-md w-full">
@@ -134,6 +143,7 @@ export function CreateAdSlot() {
                   ref={selectRef}
                   name="type"
                   className="mt-1 w-full rounded border border-[var(--color-border)] bg-white px-3 py-2 text-gray-900"
+                  onChange={() => setIsFormDirty(true)}
                 >
                   <option key="DISPLAY" value="DISPLAY">Display</option>
                   <option key="VIDEO" value="VIDEO">Video</option>
@@ -147,11 +157,12 @@ export function CreateAdSlot() {
                 Base Price*
               </label>
               <input
-                className="rounded-lg border border-[var(--color-border)] placeholder:text-slate-400 text-slate-700 text-sm border-slate-200 px-3 py-3 w-full"
+                className="rounded-lg border border-[var(--color-border)] placeholder:text-white text-white text-sm border-slate-200 px-3 py-3 w-full"
                 type="number"
                 inputMode="decimal"
                 name="basePrice"
                 defaultValue={(state.formData?.get("basePrice") as unknown) as number || undefined}
+                onChange={(e) => setIsFormDirty(e.target.value !== '')}
                 required
               />
               <input type="hidden" name="publisherId" value={roleInfo?.publisherId || ''} />

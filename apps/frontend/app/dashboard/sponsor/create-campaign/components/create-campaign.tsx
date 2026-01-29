@@ -1,7 +1,7 @@
 'use client';
 
 import { createCampaign } from '@/lib/actions';
-import { useActionState, useRef, useState } from 'react';
+import { useActionState, useState } from 'react';
 import { useFormStatus } from 'react-dom';
 import { useEffect } from 'react';
 import { redirect } from 'next/navigation';
@@ -29,7 +29,7 @@ function SubmitButton() {
 
   return (
     <button
-      className="rounded-lg bg-[var(--color-primary)] px-4 py-2 font-semibold text-white hover:opacity-90 disabled:opacity-50"
+      className="rounded-lg bg-[var(--color-secondary)] px-4 py-2 font-semibold text-white hover:opacity-90 disabled:opacity-50"
       disabled={pending}
       type="submit"
     >
@@ -45,6 +45,7 @@ export function CreateCampaign() {
   const [user, setUser] = useState<User | null>(null);
   const [roleInfo, setRoleInfo] = useState<RoleInfo | null>(null);
   const [roleLoading, setRoleLoading] = useState(true);
+  const [isFormDirty, setIsFormDirty] = useState(false);
 
   useEffect(() => {
     authClient
@@ -79,7 +80,14 @@ export function CreateCampaign() {
   }, [state, setCampaignFormSuccess]);
 
   const handleBack = () => {
+    if (isFormDirty) {
+      const confirmLeave = window.confirm('You have unsaved changes. Are you sure you want to leave?');
+      if (!confirmLeave) {
+        return;
+      }
+    }
 
+    redirect('/dashboard/sponsor');
   };
 
   return (
@@ -99,10 +107,11 @@ export function CreateCampaign() {
                 Campaign Name*
               </label>
               <input
-                className="rounded-lg border border-[var(--color-border)] placeholder:text-slate-400 text-slate-700 text-sm border-slate-200 px-3 py-1 w-full"
+                className="rounded-lg border border-[var(--color-border)] placeholder:text-white text-white text-sm border-slate-200 px-3 py-2 w-full"
                 type="text"
                 name="name"
                 defaultValue={state.formData?.get("name") as string|| ''}
+                onChange={(e) => setIsFormDirty(e.target.value !== '')}
                 required
               />
             </div>
@@ -111,10 +120,11 @@ export function CreateCampaign() {
                 Description
               </label>
               <input
-                className="rounded-lg border border-[var(--color-border)] placeholder:text-slate-400 text-slate-700 text-sm border-slate-200 px-3 py-3 w-full"
+                className="rounded-lg border border-[var(--color-border)] placeholder:text-white text-white text-sm border-slate-200 px-3 py-3 w-full"
                 type="text"
                 name="description"
                 defaultValue={state.formData?.get("description") as string|| ''}
+                onChange={(e) => setIsFormDirty(e.target.value !== '')}
               />
             </div>
             <div className="grow max-w-md w-full">
@@ -122,11 +132,12 @@ export function CreateCampaign() {
                 Budget*
               </label>
               <input
-                className="rounded-lg border border-[var(--color-border)] placeholder:text-slate-400 text-slate-700 text-sm border-slate-200 px-3 py-3 w-full"
+                className="rounded-lg border border-[var(--color-border)] placeholder:text-white text-white text-sm border-slate-200 px-3 py-2 w-full"
                 type="number"
                 inputMode="decimal"
                 name="basePrice"
                 defaultValue={(state.formData?.get("basePrice") as unknown) as number || undefined}
+                onChange={(e) => setIsFormDirty(e.target.value !== '')}
                 required
               />
               <input type="hidden" name="publisherId" value={roleInfo?.publisherId || ''} />
@@ -137,9 +148,10 @@ export function CreateCampaign() {
                 Start Date*
               </label>
               <input
-                className="rounded-lg border border-[var(--color-border)] placeholder:text-slate-400 text-slate-700 text-sm border-slate-200 px-3 py-3 w-full"
+                className="rounded-lg border border-[var(--color-border)] placeholder:text-white text-white text-sm border-slate-200 px-3 py-2 w-full"
                 type="date"
                 name="startDate"
+                onChange={(e) => setIsFormDirty(e.target.value !== '')}
                 required
               />
 
@@ -149,9 +161,10 @@ export function CreateCampaign() {
                 End Date*
               </label>
               <input
-                className="rounded-lg border border-[var(--color-border)] placeholder:text-slate-400 text-slate-700 text-sm border-slate-200 px-3 py-3 w-full"
+                className="rounded-lg border border-[var(--color-border)] placeholder:text-white text-white text-sm border-slate-200 px-3 py-2 w-full"
                 type="date"
                 name="endDate"
+                onChange={(e) => setIsFormDirty(e.target.value !== '')}
                 required
               />
 
