@@ -29,7 +29,7 @@ function SubmitButton() {
 
   return (
     <button
-      className="w-10 rounded-lg bg-[var(--color-primary)] px-4 py-2 font-semibold text-white hover:opacity-90 disabled:opacity-50"
+      className="rounded-lg bg-[var(--color-primary)] px-4 py-2 font-semibold text-white hover:opacity-90 disabled:opacity-50"
       disabled={pending}
       type="submit"
     >
@@ -91,7 +91,7 @@ export function CreateCampaign() {
         <h1 className="text-2xl font-bold">Create Campaign</h1>
       </div>
 
-      <div className="rounded-lg border border-[var(--color-border)] p-6 w-full max-w-1/2">
+      <div className="rounded-lg border border-[var(--color-border)] p-6 w-1/2 ">
         <form action={formAction}>
           <div className="mb-4 flex flex-col items-start justify-between space-y-4">
             <div className="grow max-w-md w-full">

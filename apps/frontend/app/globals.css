@@ -1,5 +1,7 @@
 @import 'tailwindcss';
 
+@source "../**/*.{js,jsx,ts,tsx}";
+
 /*
  * Tailwind CSS v4 - CSS-first configuration
  * No tailwind.config.js needed! Use CSS custom properties for theming.
