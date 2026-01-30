@@ -292,6 +292,7 @@ export function EditCampaign({ id }: { id: string }) {
                     setStartDate(e.target.value);
                     setIsFormDirty(true);
                   }}
+                  min={new Date().toISOString().split('T')[0]}
                   required
                 />
               </div>
@@ -308,6 +309,7 @@ export function EditCampaign({ id }: { id: string }) {
                     setEndDate(e.target.value);
                     setIsFormDirty(true);
                   }}
+                  min={new Date().toISOString().split('T')[0]}
                   required
                 />
               </div>

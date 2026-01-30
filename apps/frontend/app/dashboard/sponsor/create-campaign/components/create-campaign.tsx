@@ -149,6 +149,7 @@ export function CreateCampaign() {
                   name="startDate"
                   defaultValue={(state.formData?.get('startDate') as string) || ''}
                   onChange={(e) => setIsFormDirty(e.target.value !== '')}
+                  min={new Date().toISOString().split('T')[0]}
                   required
                 />
               </div>
@@ -162,6 +163,7 @@ export function CreateCampaign() {
                   name="endDate"
                   defaultValue={(state.formData?.get('endDate') as string) || ''}
                   onChange={(e) => setIsFormDirty(e.target.value !== '')}
+                  min={new Date().toISOString().split('T')[0]}
                   required
                 />
               </div>
