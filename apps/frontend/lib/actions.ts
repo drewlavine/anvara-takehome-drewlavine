@@ -137,10 +137,10 @@ export async function createAdSlot(
   formData: FormData
 ): Promise<ActionState> {
   try {
-    console.log('prevState', prevState);
     const name = formData.get('name') as string;
     const description = formData.get('description') as string;
-    const basePrice = parseFloat(formData.get('basePrice') as string);
+    const unformattedBasePrice = formData.get('basePrice') as string;
+    const basePrice = parseFloat(unformattedBasePrice.replace('$', ''));
     const type = formData.get('type') as string;
     const publisherId = formData.get('publisherId') as string;
 
@@ -153,7 +153,7 @@ export async function createAdSlot(
       return {
         success: false,
         formData: formData,
-        error: 'Failed to create campaign',
+        error: 'Failed to create ad slot',
       };
     }
 
@@ -161,11 +161,11 @@ export async function createAdSlot(
 
     return { success: true };
   } catch (error) {
-    console.log('Error creating campaign:', error);
+    console.log('Error creating Ad Slot:', error);
     return {
       success: false,
       formData: formData,
-      error: error instanceof Error ? error.message : 'Failed to create campaign',
+      error: error instanceof Error ? error.message : 'Failed to create ad slot',
     };
   }
 }
@@ -175,12 +175,7 @@ export async function updateAdSlot(formData: FormData): Promise<ActionState> {
     const id = formData.get('id') as string;
     const name = formData.get('name') as string;
     const description = formData.get('description') as string;
-    const position = formData.get('position') as string;
-    const width = formData.get('width') as unknown as number;
-    const height = formData.get('height') as unknown as number;
     const basePrice = formData.get('basePrice') as unknown as number;
-    const cpmFloor = formData.get('cpmFloor') as unknown as number;
-    const isAvailable = formData.get('isAvailable') as unknown as boolean;
     const publisherId = formData.get('publisherId') as string;
 
     const adSlot = await api<AdSlot>(`/api/ad-slots/${id}`, {
@@ -189,12 +184,7 @@ export async function updateAdSlot(formData: FormData): Promise<ActionState> {
         id,
         name,
         description,
-        position,
-        width,
-        height,
         basePrice,
-        cpmFloor,
-        isAvailable,
         publisherId,
       }),
     });
