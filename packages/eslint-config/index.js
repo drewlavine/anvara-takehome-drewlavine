@@ -54,7 +54,7 @@ export const reactConfig = [
         },
       },
       globals: {
-        ...globals.browser,
+        ...globals.node,
         ...globals.es2022,
       },
     },

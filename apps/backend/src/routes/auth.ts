@@ -1,5 +1,6 @@
 import { Router, type Request, type Response, type IRouter } from 'express';
 import { prisma } from '../db.js';
+import { auth } from '../auth.js';
 
 const router: IRouter = Router();
 
@@ -16,15 +17,28 @@ router.post('/login', async (_req: Request, res: Response) => {
 
 // GET /api/auth/me - Get current user (for API clients)
 router.get('/me', async (req: Request, res: Response) => {
-  // TODO: Challenge 3 - Implement auth middleware to validate session
-  // For now, return unauthorized
-  res.status(401).json({ error: 'Not authenticated' });
+  try {
+    const session = await auth.api.getSession({
+      headers: req.headers,
+    });
+
+    if (!session || !session.user) {
+      res.status(401).json({ error: 'Unauthorized' });
+      return;
+    }
+
+    res.json({ user: session.user });
+  } catch (error) {
+    console.error('Error fetching current user:', error);
+    res.status(500).json({ error: 'Failed to fetch current user' });
+  }
 });
 
 // GET /api/auth/role/:userId - Get user role based on Sponsor/Publisher records
 router.get('/role/:userId', async (req: Request, res: Response) => {
   try {
-    const { userId } = req.params;
+    // After looking through the code, I came to the conclusion that userId would only ever be a string, so I chose to use a type assertion
+    const { userId } = req.params as { userId: string };
 
     // Check if user is a sponsor
     const sponsor = await prisma.sponsor.findUnique({

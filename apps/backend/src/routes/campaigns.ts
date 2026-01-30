@@ -1,18 +1,24 @@
-import { Router, type Request, type Response, type IRouter } from 'express';
+import { Router, type Response, type IRouter } from 'express';
 import { prisma } from '../db.js';
-import { getParam } from '../utils/helpers.js';
+import { getParam, validateCampaignFields } from '../utils/helpers.js';
+import { AuthRequest, requireAuth } from '../auth.js';
 
 const router: IRouter = Router();
 
 // GET /api/campaigns - List all campaigns
-router.get('/', async (req: Request, res: Response) => {
+router.get('/', requireAuth, async (req: AuthRequest, res: Response) => {
   try {
-    const { status, sponsorId } = req.query;
+    const { status } = req.query;
+    const user = req.user;
+    if (!user || !user.sponsorId) {
+      res.status(401).json({ error: 'Unauthorized: Only sponsors can access campaigns' });
+      return;
+    }
 
     const campaigns = await prisma.campaign.findMany({
       where: {
         ...(status && { status: status as string as 'ACTIVE' | 'PAUSED' | 'COMPLETED' }),
-        ...(sponsorId && { sponsorId: getParam(sponsorId) }),
+        ...(user.sponsorId && { sponsorId: getParam(user.sponsorId) }),
       },
       include: {
         sponsor: { select: { id: true, name: true, logo: true } },
@@ -21,7 +27,11 @@ router.get('/', async (req: Request, res: Response) => {
       orderBy: { createdAt: 'desc' },
     });
 
-    res.json(campaigns);
+    if (!campaigns) {
+      return res.status(404).json({ error: 'No campaigns found' });
+    }
+
+    res.status(200).json(campaigns);
   } catch (error) {
     console.error('Error fetching campaigns:', error);
     res.status(500).json({ error: 'Failed to fetch campaigns' });
@@ -29,11 +39,18 @@ router.get('/', async (req: Request, res: Response) => {
 });
 
 // GET /api/campaigns/:id - Get single campaign with details
-router.get('/:id', async (req: Request, res: Response) => {
+router.get('/:id', requireAuth, async (req: AuthRequest, res: Response) => {
   try {
     const id = getParam(req.params.id);
+
+    const user = req.user;
+    if (!user || !user.sponsorId) {
+      res.status(401).json({ error: 'Unauthorized: Only sponsors can access campaigns' });
+      return;
+    }
+
     const campaign = await prisma.campaign.findUnique({
-      where: { id },
+      where: { id, sponsorId: user.sponsorId },
       include: {
         sponsor: true,
         creatives: true,
@@ -51,7 +68,7 @@ router.get('/:id', async (req: Request, res: Response) => {
       return;
     }
 
-    res.json(campaign);
+    res.status(200).json(campaign);
   } catch (error) {
     console.error('Error fetching campaign:', error);
     res.status(500).json({ error: 'Failed to fetch campaign' });
@@ -59,7 +76,7 @@ router.get('/:id', async (req: Request, res: Response) => {
 });
 
 // POST /api/campaigns - Create new campaign
-router.post('/', async (req: Request, res: Response) => {
+router.post('/', requireAuth, async (req: AuthRequest, res: Response) => {
   try {
     const {
       name,
@@ -74,10 +91,20 @@ router.post('/', async (req: Request, res: Response) => {
       sponsorId,
     } = req.body;
 
-    if (!name || !budget || !startDate || !endDate || !sponsorId) {
-      res.status(400).json({
-        error: 'Name, budget, startDate, endDate, and sponsorId are required',
-      });
+    const postValidationError = validateCampaignFields(req.body);
+    if (postValidationError) {
+      res.status(400).json({ error: postValidationError });
+      return;
+    }
+
+    const user = req.user;
+    if (!user || !user.sponsorId) {
+      res.status(401).json({ error: 'Unauthorized: Only sponsors can create campaigns' });
+      return;
+    }
+
+    if (sponsorId !== user.sponsorId) {
+      res.status(403).json({ error: 'Forbidden: Cannot create campaign for another sponsor' });
       return;
     }
 
@@ -106,7 +133,118 @@ router.post('/', async (req: Request, res: Response) => {
   }
 });
 
-// TODO: Add PUT /api/campaigns/:id endpoint
-// Update campaign details (name, budget, dates, status, etc.)
+// PUT /api/campaigns/:id - Update campaign details (name, budget, dates, status, etc.)
+router.put('/:id', requireAuth, async (req: AuthRequest, res: Response) => {
+  try {
+    const id = getParam(req.params.id);
+
+    const user = req.user;
+    if (!user || !user.sponsorId) {
+      res.status(401).json({ error: 'Unauthorized: Only sponsors can access campaigns' });
+      return;
+    }
+
+    const campaign = await prisma.campaign.findFirst({
+      where: {
+        id,
+        sponsor: { userId: req.user!.id }, // Ownership check
+      },
+    });
+
+    if (!campaign) {
+      // Returns 404 for both "not found" and "not owned"
+      // This is correct - don't reveal if resource exists
+      return res.status(404).json({ error: 'Campaign not found' });
+    }
+
+    if (campaign.sponsorId !== user.sponsorId) {
+      res.status(403).json({ error: 'Forbidden: Cannot update campaign for another sponsor' });
+      return;
+    }
+
+    const {
+      name,
+      description,
+      budget,
+      spent,
+      cpmRate,
+      cpcRate,
+      startDate,
+      endDate,
+      targetCategories,
+      targetRegions,
+      status,
+    } = req.body;
+
+    const putValidationError = validateCampaignFields(req.body);
+    if (putValidationError) {
+      return res.status(400).json({ error: putValidationError });
+    }
+
+    const updatedCampaign = await prisma.campaign.update({
+      where: { id },
+      data: {
+        name,
+        description,
+        budget,
+        cpmRate,
+        cpcRate,
+        spent,
+        startDate: startDate ? new Date(startDate) : undefined,
+        endDate: endDate ? new Date(endDate) : undefined,
+        targetCategories: targetCategories || [],
+        targetRegions: targetRegions || [],
+        status,
+      },
+      include: {
+        sponsor: { select: { id: true, name: true } },
+      },
+    });
+
+    res.status(200).json(updatedCampaign);
+  } catch (error) {
+    console.error('Error updating campaign:', error);
+    res.status(500).json({ error: 'Failed to update campaign' });
+  }
+});
+
+// DELETE /api/campaigns/:id - Delete a campaign
+router.delete('/:id', requireAuth, async (req: AuthRequest, res: Response) => {
+  try {
+    const id = getParam(req.params.id);
+
+    const user = req.user;
+    if (!user || !user.sponsorId) {
+      res.status(401).json({ error: 'Unauthorized: Only sponsors can access campaigns' });
+      return;
+    }
+
+    const campaign = await prisma.campaign.findFirst({
+      where: {
+        id,
+        sponsor: { userId: req.user!.id }, // Ownership check
+      },
+    });
+
+    if (!campaign) {
+      // Returns 404 for both "not found" and "not owned"
+      // This is correct - don't reveal if resource exists
+      return res.status(404).json({ error: 'Campaign not found' });
+    }
+
+    if (campaign.sponsorId !== user.sponsorId) {
+      res.status(403).json({ error: 'Forbidden: Cannot delete campaign for another sponsor' });
+      return;
+    }
+
+    await prisma.campaign.delete({
+      where: { id },
+    });
+    res.status(204).json('Campaign deleted successfully');
+  } catch (error) {
+    console.error('Error deleting campaign:', error);
+    res.status(500).json({ error: 'Failed to delete campaign' });
+  }
+});
 
 export default router;

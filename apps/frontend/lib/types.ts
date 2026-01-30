@@ -34,3 +34,38 @@ export interface Placement {
   campaignId: string;
   adSlotId: string;
 }
+
+export interface DashboardStats {
+  sponsors: number;
+  publishers: number;
+  activeCampaigns: number;
+  totalPlacements: number;
+  metrics: {
+    totalImpressions: number;
+    totalClicks: number;
+    totalConversions: number;
+    avgCtr: number | string;
+  };
+}
+
+export interface Session {
+  user: {
+    id: string;
+    createdAt: Date;
+    updatedAt: Date;
+    email: string;
+    emailVerified: boolean;
+    name: string;
+    image?: string | null | undefined;
+  };
+  session: {
+    id: string;
+    createdAt: Date;
+    updatedAt: Date;
+    userId: string;
+    expiresAt: Date;
+    token: string;
+    ipAddress?: string | null | undefined;
+    userAgent?: string | null | undefined;
+  };
+}
