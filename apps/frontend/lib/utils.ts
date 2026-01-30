@@ -71,7 +71,12 @@ export const logger = {
   },
 };
 
-// TODO: Add a proper date formatting utility
+// Convert a date to local time and return as ISO string
+export function dateToLocalISOString(date: Date | string | number): string {
+  const localDate = new Date(date).toLocaleString('en-US', { timeZone: 'America/New_York' });
+  return new Date(localDate).toISOString();
+}
+
 // BUG: Doesn't handle timezone or invalid dates
 export function formatRelativeTime(date: Date | string | number): string {
   const now = new Date();

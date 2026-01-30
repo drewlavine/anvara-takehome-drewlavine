@@ -123,8 +123,8 @@ export function validateCampaignFields(data: Record<string, unknown>): string | 
         return `${validation.label} cannot be null`;
       }
 
-      if (validation.mustBePositive && typeof value === 'number' && value < 0) {
-        console.log('negative value for field:', field);
+      if (validation.mustBePositive && typeof value === 'number' && value <= 0) {
+        console.log('negative or zero value for field:', field);
         return `${validation.label} must be a positive value`;
       }
     }
@@ -198,8 +198,8 @@ export function validateAdSlotsFields(data: Record<string, unknown>): string | n
         return `${validation.label} cannot be null`;
       }
 
-      if (validation.mustBePositive && typeof value === 'number' && value < 0) {
-        console.log('negative value for field:', field);
+      if (validation.mustBePositive && typeof value === 'number' && value <= 0) {
+        console.log('negative or zero value for field:', field);
         return `${validation.label} must be a positive value`;
       }
 

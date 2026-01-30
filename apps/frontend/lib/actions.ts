@@ -40,7 +40,6 @@ async function api<T>(endpoint: string, options?: RequestInit): Promise<T> {
   return res.json();
 }
 
-
 export async function createCampaign(
   prevState: ActionState,
   formData: FormData
@@ -52,10 +51,11 @@ export async function createCampaign(
     const budget = formData.get('budget');
     const startDate = formData.get('startDate');
     const endDate = formData.get('endDate');
+    const sponsorId = formData.get('sponsorId');
 
     const campaign = await api<Campaign>('/api/campaigns', {
       method: 'POST',
-      body: JSON.stringify({ name, description, budget, startDate, endDate }),
+      body: JSON.stringify({ name, description, budget, startDate, endDate, sponsorId }),
     });
 
     if (!campaign) {
@@ -68,8 +68,7 @@ export async function createCampaign(
 
     revalidatePath('/dashboard/sponsor');
 
-    return {success: true};
-
+    return { success: true };
   } catch (error) {
     console.log('Error creating campaign:', error);
     return {
@@ -80,7 +79,47 @@ export async function createCampaign(
   }
 }
 
+export async function updateCampaign(
+  prevState: ActionState,
+  formData: FormData
+): Promise<ActionState> {
+  try {
+    console.log('prevState', prevState);
+    const id = formData.get('id') as string;
+    const name = formData.get('name') as string;
+    const description = formData.get('description');
+    const budget = formData.get('budget');
+    const startDate = formData.get('startDate');
+    const endDate = formData.get('endDate');
+    const publisherId = formData.get('publisherId');
 
+    console.log('budget', budget);
+
+    const campaign = await api<Campaign>(`/api/campaigns/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify({ id, name, description, budget, startDate, endDate, publisherId }),
+    });
+
+    if (!campaign) {
+      return {
+        success: false,
+        formData: formData,
+        error: 'Failed to update campaign',
+      };
+    }
+
+    revalidatePath('/dashboard/sponsor');
+
+    return { success: true };
+  } catch (error) {
+    console.log('Error updating campaign:', error);
+    return {
+      success: false,
+      formData: formData,
+      error: error instanceof Error ? error.message : 'Failed to update campaign',
+    };
+  }
+}
 
 export async function getCampaign(id: string): Promise<Campaign> {
   return api<Campaign>(`/api/campaigns/${id}`);
@@ -123,8 +162,7 @@ export async function createAdSlot(
 
     revalidatePath('/dashboard/publisher');
 
-    return {success: true};
-
+    return { success: true };
   } catch (error) {
     console.log('Error creating campaign:', error);
     return {

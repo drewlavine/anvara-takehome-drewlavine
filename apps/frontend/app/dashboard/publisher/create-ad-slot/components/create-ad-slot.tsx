@@ -8,7 +8,6 @@ import { redirect } from 'next/navigation';
 import { useFormContext } from '@/lib/form-context';
 import { authClient } from '@/auth-client';
 
-
 interface User {
   id: string;
   name: string;
@@ -24,9 +23,6 @@ interface RoleInfo {
 function SubmitButton() {
   const { pending } = useFormStatus();
 
-
-
-
   return (
     <button
       className="rounded-lg bg-[var(--color-secondary)] px-4 py-2 font-semibold text-white hover:opacity-90 disabled:opacity-50"
@@ -37,7 +33,6 @@ function SubmitButton() {
     </button>
   );
 }
-
 
 export function CreateAdSlot() {
   const [state, formAction] = useActionState(createAdSlot, {});
@@ -50,31 +45,28 @@ export function CreateAdSlot() {
 
   useEffect(() => {
     authClient
-          .getSession()
-          .then(({ data }) => {
-            if (data?.user) {
-              const sessionUser = data.user as User;
-              setUser(sessionUser);
+      .getSession()
+      .then(({ data }) => {
+        if (data?.user) {
+          const sessionUser = data.user as User;
+          setUser(sessionUser);
 
-              // Fetch role info from backend
-              fetch(
-                `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4291'}/api/auth/role/${sessionUser.id}`
-              )
-                .then((res) => res.json())
-                .then((data) => setRoleInfo(data))
-                .catch(() => setRoleInfo(null))
-                .finally(() => setRoleLoading(false));
-            } else {
-              setRoleLoading(false);
-            }
-          })
-          .catch(() => setRoleLoading(false));
-  }, [])
-
-
+          // Fetch role info from backend
+          fetch(
+            `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4291'}/api/auth/role/${sessionUser.id}`
+          )
+            .then((res) => res.json())
+            .then((data) => setRoleInfo(data))
+            .catch(() => setRoleInfo(null))
+            .finally(() => setRoleLoading(false));
+        } else {
+          setRoleLoading(false);
+        }
+      })
+      .catch(() => setRoleLoading(false));
+  }, []);
 
   useEffect(() => {
-
     if (state?.error && state.formData?.get('type')) {
       const typeValue = state.formData.get('type') as string;
 
@@ -90,7 +82,9 @@ export function CreateAdSlot() {
 
   const handleBack = () => {
     if (isFormDirty) {
-      const confirmLeave = window.confirm('You have unsaved changes. Are you sure you want to leave?');
+      const confirmLeave = window.confirm(
+        'You have unsaved changes. Are you sure you want to leave?'
+      );
       if (!confirmLeave) {
         return;
       }
@@ -104,71 +98,81 @@ export function CreateAdSlot() {
       <button onClick={handleBack} className="text-[var(--color-primary)] hover:underline">
         ← Back to Ad Slots
       </button>
-      <div className="mb-4">
-        <h1 className="text-2xl font-bold">Create Ad Slot</h1>
-      </div>
 
-      <div className="rounded-lg border border-[var(--color-border)] p-6 max-w-1/2">
+      <div className="rounded-lg bg-(--color-background) border border-[var(--color-border)] p-6 w-1/2 ">
+        <div className="mb-4">
+          <h1 className="text-2xl font-bold">Create Ad Slot</h1>
+        </div>
         <form action={formAction}>
-          <div className="mb-4 flex flex-col items-start justify-between space-y-4">
-            <div className="grow max-w-md w-full">
-              <label className="block text-sm/6 font-medium text-white" htmlFor="name">
+          <div className="mb-2 flex flex-col items-start justify-between space-y-4">
+            <div className="grow  w-full">
+              <label className="block text-md font-semibold text-white mb-1" htmlFor="name">
                 Ad Slot Name*
               </label>
               <input
-                className="rounded-lg border border-[var(--color-border)] placeholder:text-white text-white text-sm border-slate-200 px-3 py-1 w-full"
+                className="rounded-lg bg-(--color-background) border border-[var(--color-border)]  placeholder:text-white-400 text-sm border-slate-200 px-3 py-2 w-full"
                 type="text"
                 name="name"
-                defaultValue={state.formData?.get("name") as string|| ''}
+                defaultValue={(state.formData?.get('name') as string) || ''}
                 onChange={(e) => setIsFormDirty(e.target.value !== '')}
                 required
               />
             </div>
-            <div className="grow max-w-md w-full">
-              <label className="block text-sm/6 font-medium text-white" htmlFor="description">
+            <div className="grow  w-full">
+              <label className="block text-md font-semibold text-white mb-1" htmlFor="description">
                 Description
               </label>
               <textarea
-                className="rounded-lg border border-[var(--color-border)] placeholder:text-white text-white text-sm border-slate-200 px-3 py-3 w-full"
+                className="rounded-lg bg-(--color-background) border border-[var(--color-border)] placeholder:text-white-400 text-sm border-slate-200 px-3 py-3 w-full"
                 name="description"
-                defaultValue={state.formData?.get("description") as string|| ''}
+                defaultValue={(state.formData?.get('description') as string) || ''}
                 onChange={(e) => setIsFormDirty(e.target.value !== '')}
               />
             </div>
-            <div className="grow max-w-md w-full">
-              <label className="block text-sm/6 font-medium text-white" htmlFor="type">
+            <div className="grow  w-full">
+              <label className="block text-md font-semibold text-white mb-1" htmlFor="type">
                 Type
               </label>
-                <select
-                  ref={selectRef}
-                  name="type"
-                  className="mt-1 w-full rounded border border-[var(--color-border)] bg-white px-3 py-2 text-gray-900"
-                  onChange={() => setIsFormDirty(true)}
-                >
-                  <option key="DISPLAY" value="DISPLAY">Display</option>
-                  <option key="VIDEO" value="VIDEO">Video</option>
-                  <option key="NATIVE" value="NATIVE">Native</option>
-                  <option key="NEWSLETTER" value="NEWSLETTER">Newsletter</option>
-                  <option key="PODCAST" value="PODCAST">Podcast</option>
-                </select>
+              <select
+                ref={selectRef}
+                name="type"
+                className="mt-1 w-full rounded border border-[var(--color-border)] bg-(--color-background) px-3 py-2 text-white"
+                onChange={() => setIsFormDirty(true)}
+              >
+                <option key="DISPLAY" value="DISPLAY">
+                  Display
+                </option>
+                <option key="VIDEO" value="VIDEO">
+                  Video
+                </option>
+                <option key="NATIVE" value="NATIVE">
+                  Native
+                </option>
+                <option key="NEWSLETTER" value="NEWSLETTER">
+                  Newsletter
+                </option>
+                <option key="PODCAST" value="PODCAST">
+                  Podcast
+                </option>
+              </select>
             </div>
-            <div className="grow max-w-md w-full">
-              <label className="block text-sm/6 font-medium text-white" htmlFor="basePrice">
+            <div className="grow  w-full">
+              <label className="block text-md font-semibold text-white mb-1" htmlFor="basePrice">
                 Base Price*
               </label>
               <input
-                className="rounded-lg border border-[var(--color-border)] placeholder:text-white text-white text-sm border-slate-200 px-3 py-3 w-full"
+                className="rounded-lg bg-(--color-background) border border-[var(--color-border)] placeholder:text-white-400 text-sm border-slate-200 px-3 py-2 w-full"
                 type="number"
                 inputMode="decimal"
                 name="basePrice"
-                defaultValue={(state.formData?.get("basePrice") as unknown) as number || undefined}
+                defaultValue={(state.formData?.get('basePrice') as unknown as number) || undefined}
                 onChange={(e) => setIsFormDirty(e.target.value !== '')}
                 required
               />
               <input type="hidden" name="publisherId" value={roleInfo?.publisherId || ''} />
             </div>
 
-            <SubmitButton  />
+            <SubmitButton />
 
             {state?.error && <p className="text-red-600 mt-2">{state.error}</p>}
           </div>
