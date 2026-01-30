@@ -224,8 +224,19 @@ export async function getAdSlot(id: string): Promise<AdSlot> {
   return api<AdSlot>(`/api/ad-slots/${id}`);
 }
 
+// Fetch ad slots for publisher dashboard (requires auth)
 export async function getAdSlots(publisherId?: string): Promise<AdSlot[]> {
   return api<AdSlot[]>(publisherId ? `/api/ad-slots?publisherId=${publisherId}` : '/api/ad-slots');
+}
+
+// Fetch ad slots for marketplace (public, no auth required)
+export async function getMarketplaceAdSlots(): Promise<AdSlot[]> {
+  return api<AdSlot[]>('/api/ad-slots/marketplace');
+}
+
+// Fetch single ad slot for marketplace (public, no auth required)
+export async function getMarketplaceAdSlot(id: string): Promise<AdSlot> {
+  return api<AdSlot>(`/api/ad-slots/marketplace/${id}`);
 }
 
 export async function deleteAdSlot(id: string): Promise<ActionState> {

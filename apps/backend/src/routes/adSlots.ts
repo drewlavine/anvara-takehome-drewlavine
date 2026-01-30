@@ -5,7 +5,58 @@ import { AuthRequest, requireAuth } from '../auth.js';
 
 const router: IRouter = Router();
 
-// GET /api/ad-slots - List available ad slot
+// GET /api/ad-slots/marketplace - Public endpoint for marketplace (no auth required)
+// Returns all available ad slots for browsing by sponsors or unauthenticated users
+router.get('/marketplace', async (req: Request, res: Response) => {
+  try {
+    const { type } = req.query;
+
+    const adSlots = await prisma.adSlot.findMany({
+      where: {
+        isAvailable: true, // Only show available slots in marketplace
+        ...(type && {
+          type: type as string as 'DISPLAY' | 'VIDEO' | 'NATIVE' | 'NEWSLETTER' | 'PODCAST',
+        }),
+      },
+      include: {
+        publisher: { select: { id: true, name: true, category: true, monthlyViews: true } },
+        _count: { select: { placements: true } },
+      },
+      orderBy: { basePrice: 'desc' },
+    });
+
+    res.json(adSlots);
+  } catch (error) {
+    console.error('Error fetching marketplace ad slots:', error);
+    res.status(500).json({ error: 'Failed to fetch ad slots' });
+  }
+});
+
+// GET /api/ad-slots/marketplace/:id - Public endpoint to get single ad slot details
+router.get('/marketplace/:id', async (req: Request, res: Response) => {
+  try {
+    const id = getParam(req.params.id);
+
+    const adSlot = await prisma.adSlot.findUnique({
+      where: { id },
+      include: {
+        publisher: { select: { id: true, name: true, website: true, category: true, monthlyViews: true } },
+      },
+    });
+
+    if (!adSlot) {
+      res.status(404).json({ error: 'Ad slot not found' });
+      return;
+    }
+
+    res.json(adSlot);
+  } catch (error) {
+    console.error('Error fetching ad slot:', error);
+    res.status(500).json({ error: 'Failed to fetch ad slot' });
+  }
+});
+
+// GET /api/ad-slots - List available ad slots (requires auth, filtered by publisher)
 router.get('/', requireAuth, async (req: AuthRequest, res: Response) => {
   try {
     const { type, available } = req.query;

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { getAdSlot } from '@/lib/actions';
+import { getMarketplaceAdSlot } from '@/lib/actions';
 import { authClient } from '@/auth-client';
 
 interface AdSlot {
@@ -56,8 +56,8 @@ export function AdSlotDetail({ id }: Props) {
   const [bookingError, setBookingError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Fetch ad slot
-    getAdSlot(id)
+    // Fetch ad slot using public marketplace endpoint (no auth required)
+    getMarketplaceAdSlot(id)
       .then(setAdSlot)
       .catch(() => setError('Failed to load ad slot details'))
       .finally(() => setLoading(false));
