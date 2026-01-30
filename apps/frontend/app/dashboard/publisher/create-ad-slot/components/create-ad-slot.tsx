@@ -38,9 +38,7 @@ export function CreateAdSlot() {
   const [state, formAction] = useActionState(createAdSlot, {});
   const { setAdSlotFormSuccess } = useFormContext();
   const selectRef = useRef<HTMLSelectElement>(null);
-  const [user, setUser] = useState<User | null>(null);
   const [roleInfo, setRoleInfo] = useState<RoleInfo | null>(null);
-  const [roleLoading, setRoleLoading] = useState(true);
   const [isFormDirty, setIsFormDirty] = useState(false);
 
   useEffect(() => {
@@ -49,7 +47,6 @@ export function CreateAdSlot() {
       .then(({ data }) => {
         if (data?.user) {
           const sessionUser = data.user as User;
-          setUser(sessionUser);
 
           // Fetch role info from backend
           fetch(
@@ -57,13 +54,12 @@ export function CreateAdSlot() {
           )
             .then((res) => res.json())
             .then((data) => setRoleInfo(data))
-            .catch(() => setRoleInfo(null))
-            .finally(() => setRoleLoading(false));
+            .catch(() => setRoleInfo(null));
         } else {
-          setRoleLoading(false);
+          redirect('/login');
         }
       })
-      .catch(() => setRoleLoading(false));
+      .catch(() => redirect('/login'));
   }, []);
 
   useEffect(() => {
@@ -106,11 +102,11 @@ export function CreateAdSlot() {
         <form action={formAction}>
           <div className="mb-2 flex flex-col items-start justify-between space-y-4">
             <div className="grow  w-full">
-              <label className="block text-md font-semibold text-white mb-1" htmlFor="name">
+              <label className="block text-sm/6 font-medium text-white" htmlFor="name">
                 Ad Slot Name*
               </label>
               <input
-                className="rounded-lg bg-(--color-background) border border-[var(--color-border)]  placeholder:text-white-400 text-sm border-slate-200 px-3 py-2 w-full"
+                className="rounded-lg bg-(--color-foreground) border border-[var(--color-border)]  placeholder:text-gray-400 text-gray-900 text-sm border-slate-200 px-3 py-2 w-full"
                 type="text"
                 name="name"
                 defaultValue={(state.formData?.get('name') as string) || ''}
@@ -123,7 +119,7 @@ export function CreateAdSlot() {
                 Description
               </label>
               <textarea
-                className="rounded-lg bg-(--color-background) border border-[var(--color-border)] placeholder:text-white-400 text-sm border-slate-200 px-3 py-3 w-full"
+                className="rounded-lg bg-(--color-foreground) border border-[var(--color-border)] placeholder:text-gray-400 text-sm border-slate-200 px-3 py-3 w-full"
                 name="description"
                 defaultValue={(state.formData?.get('description') as string) || ''}
                 onChange={(e) => setIsFormDirty(e.target.value !== '')}
@@ -136,7 +132,7 @@ export function CreateAdSlot() {
               <select
                 ref={selectRef}
                 name="type"
-                className="mt-1 w-full rounded border border-[var(--color-border)] bg-(--color-background) px-3 py-2 text-white"
+                className="rounded-lg bg-(--color-foreground) border border-[var(--color-border)]  placeholder:text-gray-400 text-gray-900 text-sm border-slate-200 px-3 py-2 w-full"
                 onChange={() => setIsFormDirty(true)}
               >
                 <option key="DISPLAY" value="DISPLAY">
@@ -161,7 +157,7 @@ export function CreateAdSlot() {
                 Base Price*
               </label>
               <input
-                className="rounded-lg bg-(--color-background) border border-[var(--color-border)] placeholder:text-white-400 text-sm border-slate-200 px-3 py-2 w-full"
+                className="rounded-lg bg-(--color-foreground) border border-[var(--color-border)] placeholder:text-gray-400 text-gray-900 text-sm border-slate-200 px-3 py-2 w-full"
                 type="number"
                 inputMode="decimal"
                 name="basePrice"

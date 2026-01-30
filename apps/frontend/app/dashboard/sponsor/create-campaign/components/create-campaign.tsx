@@ -38,9 +38,7 @@ function SubmitButton() {
 export function CreateCampaign() {
   const [state, formAction] = useActionState(createCampaign, {});
   const { setCampaignFormSuccess } = useFormContext();
-  const [user, setUser] = useState<User | null>(null);
   const [roleInfo, setRoleInfo] = useState<RoleInfo | null>(null);
-  const [roleLoading, setRoleLoading] = useState(true);
   const [isFormDirty, setIsFormDirty] = useState(false);
 
   useEffect(() => {
@@ -49,7 +47,6 @@ export function CreateCampaign() {
       .then(({ data }) => {
         if (data?.user) {
           const sessionUser = data.user as User;
-          setUser(sessionUser);
 
           // Fetch role info from backend
           fetch(
@@ -57,13 +54,12 @@ export function CreateCampaign() {
           )
             .then((res) => res.json())
             .then((data) => setRoleInfo(data))
-            .catch(() => setRoleInfo(null))
-            .finally(() => setRoleLoading(false));
+            .catch(() => setRoleInfo(null));
         } else {
-          setRoleLoading(false);
+          redirect('/login');
         }
       })
-      .catch(() => setRoleLoading(false));
+      .catch(() => redirect('/login'));
   }, []);
 
   useEffect(() => {
@@ -126,15 +122,15 @@ export function CreateCampaign() {
               />
             </div>
             <div className="grow w-full">
-              <label className="block text-sm/6 font-medium text-white" htmlFor="basePrice">
+              <label className="block text-sm/6 font-medium text-white" htmlFor="budget">
                 Budget*
               </label>
 
               <CurrencyInput
                 className="rounded-lg bg-(--color-foreground) border border-[var(--color-border)] placeholder:text-gray-400 text-gray-900 text-sm border-slate-200 px-3 py-2 w-full"
-                name="basePrice"
+                name="budget"
                 defaultValue={(state.formData?.get('budget') as unknown as number) || undefined}
-                onValueChange={(value) => setIsFormDirty(value !== '')}
+                onValueChange={(value: string | undefined) => setIsFormDirty(value !== '')}
                 prefix="$"
                 placeholder="Enter a budget amount"
                 required
@@ -144,25 +140,27 @@ export function CreateCampaign() {
             </div>
             <div className="flex grow w-full gap-4 justify-between">
               <div className="grow w-full">
-                <label className="block text-sm/6 font-medium text-white" htmlFor="basePrice">
+                <label className="block text-sm/6 font-medium text-white" htmlFor="startDate">
                   Start Date*
                 </label>
                 <input
                   className="rounded-lg bg-(--color-foreground) border border-[var(--color-border)]  placeholder:text-gray-400 text-gray-900 text-sm border-slate-200 px-3 py-2 w-full"
                   type="date"
                   name="startDate"
+                  defaultValue={(state.formData?.get('startDate') as string) || ''}
                   onChange={(e) => setIsFormDirty(e.target.value !== '')}
                   required
                 />
               </div>
               <div className="grow w-full">
-                <label className="block text-sm/6 font-medium text-white" htmlFor="basePrice">
+                <label className="block text-sm/6 font-medium text-white" htmlFor="endDate">
                   End Date*
                 </label>
                 <input
                   className="rounded-lg bg-(--color-foreground) border border-[var(--color-border)]  placeholder:text-gray-400 text-gray-900 text-sm border-slate-200 px-3 py-2 w-full"
                   type="date"
                   name="endDate"
+                  defaultValue={(state.formData?.get('endDate') as string) || ''}
                   onChange={(e) => setIsFormDirty(e.target.value !== '')}
                   required
                 />

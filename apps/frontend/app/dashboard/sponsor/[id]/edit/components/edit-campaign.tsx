@@ -1,12 +1,13 @@
 'use client';
 
 import { useState, FormEvent } from 'react';
-import { getCampaign, updateCampaign } from '@/lib/actions';
+import { getCampaign, updateCampaign, deleteCampaign } from '@/lib/actions';
 import { useEffect } from 'react';
-import { redirect } from 'next/navigation';
+import { redirect, useRouter } from 'next/navigation';
 import { authClient } from '@/auth-client';
 import { dateToLocalISOString } from '@/lib/utils';
 import CurrencyInput from 'react-currency-input-field';
+import { useFormContext } from '@/lib/form-context';
 
 interface User {
   id: string;
@@ -35,10 +36,11 @@ function SubmitButton({ isPending }: { isPending: boolean }) {
 
 export function EditCampaign({ id }: { id: string }) {
   const [isPending, setIsPending] = useState(false);
+  const { setCampaignDeleteSuccess } = useFormContext();
   const [roleInfo, setRoleInfo] = useState<RoleInfo | null>(null);
   const [isFormDirty, setIsFormDirty] = useState(false);
   const [showSuccessNotification, setShowSuccessNotification] = useState(false);
-  const [updateError, setUpdateError] = useState<string | null>(null);
+  const [apiError, setApiError] = useState<string | null>(null);
 
   // Form field states
   const [name, setName] = useState('');
@@ -46,6 +48,8 @@ export function EditCampaign({ id }: { id: string }) {
   const [budget, setBudget] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
+
+  const router = useRouter();
 
   useEffect(() => {
     authClient
@@ -107,23 +111,45 @@ export function EditCampaign({ id }: { id: string }) {
       formData.append('budget', budget);
       formData.append('startDate', startDate);
       formData.append('endDate', endDate);
-      formData.append('publisherId', roleInfo?.publisherId || '');
+      formData.append('sponsorId', roleInfo?.sponsorId || '');
 
-      const result = await updateCampaign({}, formData);
+      const result = await updateCampaign(formData);
 
       if (result?.success) {
         setShowSuccessNotification(true);
-        setUpdateError(null);
+        setApiError(null);
         setIsFormDirty(false);
         // Auto-dismiss after 3 seconds
         setTimeout(() => {
           setShowSuccessNotification(false);
         }, 5000);
       } else {
-        setUpdateError(result?.error || 'Failed to update campaign');
+        setApiError(result?.error || 'Failed to update campaign');
       }
     } catch (error) {
-      setUpdateError(error instanceof Error ? error.message : 'Failed to update campaign');
+      setApiError(error instanceof Error ? error.message : 'Failed to update campaign');
+    } finally {
+      setIsPending(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    const confirmDelete = window.confirm(
+      'Are you sure you want to delete this campaign? This action cannot be undone.'
+    );
+
+    if (!confirmDelete) {
+      return;
+    }
+
+    setIsPending(true);
+
+    try {
+      await deleteCampaign(id);
+      setCampaignDeleteSuccess(true);
+      router.push('/dashboard/sponsor');
+    } catch (error) {
+      setApiError(error instanceof Error ? error.message : 'Failed to delete campaign');
     } finally {
       setIsPending(false);
     }
@@ -131,26 +157,6 @@ export function EditCampaign({ id }: { id: string }) {
 
   return (
     <div className="space-y-6">
-      {updateError && (
-        <div className="rounded-lg border border-red-200 bg-red-50 p-4 flex items-center justify-between">
-          <div>
-            <h3 className="font-semibold text-red-800">Error</h3>
-            <p className="text-sm text-red-700">{updateError}</p>
-          </div>
-          <button onClick={() => setUpdateError(null)} className="text-red-600 hover:text-red-800">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={1.5}
-              stroke="currentColor"
-              className="size-5"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
-      )}
       <button onClick={handleBack} className="text-[var(--color-primary)] hover:underline">
         ← Back to Campaigns
       </button>
@@ -174,12 +180,34 @@ export function EditCampaign({ id }: { id: string }) {
           </button>
         </div>
       )}
+      {apiError && (
+        <div className="rounded-lg border border-red-200 bg-red-50 p-4 flex items-center justify-between">
+          <div>
+            <h3 className="font-semibold text-red-800">Error</h3>
+            <p className="text-sm text-red-700">{apiError}</p>
+          </div>
+          <button onClick={() => setApiError(null)} className="text-red-600 hover:text-red-800">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={1.5}
+              stroke="currentColor"
+              className="size-5"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+      )}
       <div className="flex flex-col rounded-lg bg-(--color-background) border border-[var(--color-border)] p-6 w-full ">
         <div className="mb-4 flex justify-between">
           <h1 className="text-2xl font-bold">Edit Campaign</h1>
           <button
-            className="rounded-lg bg-[var(--color-error)] px-3 py-2.5 font-semibold text-white hover:opacity-90"
+            className="rounded-lg bg-[var(--color-error)] px-3 py-2.5 font-semibold text-white hover:opacity-90 disabled:opacity-50"
             type="button"
+            onClick={handleDelete}
+            disabled={isPending}
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -233,12 +261,12 @@ export function EditCampaign({ id }: { id: string }) {
               />
             </div>
             <div className="grow  w-full">
-              <label className="block text-md font-semibold text-white mb-1" htmlFor="basePrice">
+              <label className="block text-md font-semibold text-white mb-1" htmlFor="budget">
                 Budget*
               </label>
               <CurrencyInput
                 className="rounded-lg bg-(--color-foreground) border border-[var(--color-border)] placeholder:text-gray-400 text-gray-900 text-sm border-slate-200 px-3 py-2 w-full"
-                name="basePrice"
+                name="budget"
                 value={budget}
                 onValueChange={(value) => {
                   setBudget(value || '');
@@ -252,7 +280,7 @@ export function EditCampaign({ id }: { id: string }) {
             </div>
             <div className="flex grow  w-full gap-4 justify-between">
               <div className="grow w-full">
-                <label className="block text-md font-semibold text-white mb-1" htmlFor="basePrice">
+                <label className="block text-md font-semibold text-white mb-1" htmlFor="startDate">
                   Start Date*
                 </label>
                 <input
@@ -268,7 +296,7 @@ export function EditCampaign({ id }: { id: string }) {
                 />
               </div>
               <div className="grow w-full">
-                <label className="block text-md font-semibold text-white mb-1" htmlFor="basePrice">
+                <label className="block text-md font-semibold text-white mb-1" htmlFor="endDate">
                   End Date*
                 </label>
                 <input
@@ -283,7 +311,7 @@ export function EditCampaign({ id }: { id: string }) {
                   required
                 />
               </div>
-              <input type="hidden" name="publisherId" value={roleInfo?.publisherId || ''} />
+              <input type="hidden" name="sponsorId" value={roleInfo?.sponsorId || ''} />
               <input type="hidden" name="id" value={id || ''} />
             </div>
 

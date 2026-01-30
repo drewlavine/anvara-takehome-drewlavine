@@ -48,7 +48,8 @@ export async function createCampaign(
     console.log('prevState', prevState);
     const name = formData.get('name') as string;
     const description = formData.get('description');
-    const budget = formData.get('budget');
+    const unformattedBudget = formData.get('budget') as string;
+    const budget = parseFloat(unformattedBudget.replace('$', ''));
     const startDate = formData.get('startDate');
     const endDate = formData.get('endDate');
     const sponsorId = formData.get('sponsorId');
@@ -79,12 +80,8 @@ export async function createCampaign(
   }
 }
 
-export async function updateCampaign(
-  prevState: ActionState,
-  formData: FormData
-): Promise<ActionState> {
+export async function updateCampaign(formData: FormData): Promise<ActionState> {
   try {
-    console.log('prevState', prevState);
     const id = formData.get('id') as string;
     const name = formData.get('name') as string;
     const description = formData.get('description');
@@ -169,6 +166,56 @@ export async function createAdSlot(
       success: false,
       formData: formData,
       error: error instanceof Error ? error.message : 'Failed to create campaign',
+    };
+  }
+}
+
+export async function updateAdSlot(formData: FormData): Promise<ActionState> {
+  try {
+    const id = formData.get('id') as string;
+    const name = formData.get('name') as string;
+    const description = formData.get('description') as string;
+    const position = formData.get('position') as string;
+    const width = formData.get('width') as unknown as number;
+    const height = formData.get('height') as unknown as number;
+    const basePrice = formData.get('basePrice') as unknown as number;
+    const cpmFloor = formData.get('cpmFloor') as unknown as number;
+    const isAvailable = formData.get('isAvailable') as unknown as boolean;
+    const publisherId = formData.get('publisherId') as string;
+
+    const adSlot = await api<AdSlot>(`/api/ad-slots/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify({
+        id,
+        name,
+        description,
+        position,
+        width,
+        height,
+        basePrice,
+        cpmFloor,
+        isAvailable,
+        publisherId,
+      }),
+    });
+
+    if (!adSlot) {
+      return {
+        success: false,
+        formData: formData,
+        error: 'Failed to update ad slot',
+      };
+    }
+
+    revalidatePath('/dashboard/publisher');
+
+    return { success: true };
+  } catch (error) {
+    console.log('Error updating ad slot:', error);
+    return {
+      success: false,
+      formData: formData,
+      error: error instanceof Error ? error.message : 'Failed to update ad slot',
     };
   }
 }
