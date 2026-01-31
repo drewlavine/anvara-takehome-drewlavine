@@ -45,11 +45,8 @@ export function Nav() {
       });
   }, []);
 
-  // TODO: Add active link styling using usePathname() from next/navigation
-  // The current page's link should be highlighted differently
-
   return (
-    <header className="border-b border-[var(--color-border)]">
+    <header className="sticky top-0 z-50 bg-[var(--color-background)]/95 backdrop-blur-sm border-b border-[var(--color-border)]  shadow-(--header-shadow)">
       <nav className="mx-auto flex max-w-6xl items-center justify-between p-4">
         <Link href="/" className="text-xl font-bold text-[var(--color-primary)]">
           Anvara
