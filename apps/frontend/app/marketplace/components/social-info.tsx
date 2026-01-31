@@ -166,6 +166,7 @@ function NewsletterStats() {
   );
 }
 
+// I had AI generate the SVG for this icon since I couldn't find a good free svg headphone icon
 function PodcastStats() {
   return (
     <div className="grid grid-cols-2 gap-2 my-4">
