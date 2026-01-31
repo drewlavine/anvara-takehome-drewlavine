@@ -11,6 +11,13 @@ import { authClient } from '@/auth-client';
 export function Nav() {
   const [role, setRole] = useState<string | null>(null);
   const [user, setUser] = useState<User | null>(null);
+  const pathname = usePathname();
+
+  function isActivePath(path: string): boolean {
+    if (!pathname) return false;
+    if (path === '/') return pathname === '/';
+    return pathname === path || pathname.startsWith(path + '/') || pathname.startsWith(path);
+  }
 
   useEffect(() => {
     authClient
@@ -51,7 +58,7 @@ export function Nav() {
         <div className="flex items-center gap-6">
           <Link
             href="/marketplace"
-            className="text-[var(--color-muted)] hover:text-[var(--color-foreground)]"
+            className={isActivePath('/marketplace') ? 'text-[var(--color-foreground)] font-semibold' : 'text-[var(--color-muted)] hover:text-[var(--color-foreground)]'}
           >
             Marketplace
           </Link>
@@ -59,7 +66,7 @@ export function Nav() {
           {user && role === 'sponsor' && (
             <Link
               href="/dashboard/sponsor"
-              className="text-[var(--color-muted)] hover:text-[var(--color-foreground)]"
+              className={isActivePath('/dashboard/sponsor') ? 'text-[var(--color-foreground)] font-semibold' : 'text-[var(--color-muted)] hover:text-[var(--color-foreground)]'}
             >
               My Campaigns
             </Link>
@@ -67,7 +74,7 @@ export function Nav() {
           {user && role === 'publisher' && (
             <Link
               href="/dashboard/publisher"
-              className="text-[var(--color-muted)] hover:text-[var(--color-foreground)]"
+              className={isActivePath('/dashboard/publisher') ? 'text-[var(--color-foreground)] font-semibold' : 'text-[var(--color-muted)] hover:text-[var(--color-foreground)]'}
             >
               My Ad Slots
             </Link>
@@ -83,7 +90,7 @@ export function Nav() {
           ) : (
             <Link
               href="/login"
-              className="rounded bg-[var(--color-primary)] px-4 py-2 text-sm text-white hover:bg-[var(--color-primary-hover)]"
+              className={isActivePath('/login') ? 'text-[var(--color-foreground)] font-semibold rounded bg-[var(--color-primary)] px-4 py-2 text-sm text-white' : 'rounded bg-[var(--color-primary)] px-4 py-2 text-sm text-white hover:bg-[var(--color-primary-hover)]'}
             >
               Login
             </Link>
