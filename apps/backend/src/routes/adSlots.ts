@@ -40,7 +40,9 @@ router.get('/marketplace/:id', async (req: Request, res: Response) => {
     const adSlot = await prisma.adSlot.findUnique({
       where: { id },
       include: {
-        publisher: { select: { id: true, name: true, website: true, category: true, monthlyViews: true } },
+        publisher: {
+          select: { id: true, name: true, website: true, category: true, monthlyViews: true },
+        },
       },
     });
 

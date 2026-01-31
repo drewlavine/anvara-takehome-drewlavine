@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { getMarketplaceAdSlots } from '@/lib/actions';
 import { AdSlot } from '@/lib/types';
+import Image from 'next/image';
+import placeholder from '../../../assets/placeholder.png';
 
 const typeColors: Record<string, string> = {
   DISPLAY: 'bg-blue-100 text-blue-700',
@@ -46,36 +48,48 @@ export function AdSlotGrid() {
         <Link
           key={slot.id}
           href={`/marketplace/${slot.id}`}
-          className="block rounded-lg border border-[var(--color-border)] p-4 transition-shadow hover:shadow-md"
+          className="block rounded-lg border border-[var(--color-border)] transition-shadow hover:shadow-md bg-(--color-foreground)"
         >
-          <div className="mb-2 flex items-start justify-between">
-            <h3 className="font-semibold">{slot.name}</h3>
-            <span
-              className={`rounded px-2 py-0.5 text-xs ${typeColors[slot.type] || 'bg-gray-100'}`}
-            >
-              {slot.type}
-            </span>
-          </div>
+          <div className="relative">
+            <Image
+              src={placeholder}
+              width={400}
+              height={200}
+              className="mb-2 h-48 w-full rounded object-cover"
+              alt="Ad Slot Image"
+            />
 
-          {slot.publisher && (
-            <p className="mb-2 text-sm text-[var(--color-muted)]">by {slot.publisher.name}</p>
-          )}
-
-          {slot.description && (
-            <p className="mb-3 text-sm text-[var(--color-muted)] line-clamp-2">
-              {slot.description}
-            </p>
-          )}
-
-          <div className="flex items-center justify-between">
-            <span
-              className={`text-sm ${slot.isAvailable ? 'text-green-600' : 'text-[var(--color-muted)]'}`}
-            >
-              {slot.isAvailable ? 'Available' : 'Booked'}
-            </span>
-            <span className="font-semibold text-[var(--color-primary)]">
+            <span className="absolute left-2 bottom-2 bg-white/90 text-[var(--color-primary)] font-semibold px-2 py-1 rounded shadow">
               ${Number(slot.basePrice).toLocaleString()}/mo
             </span>
+          </div>
+          <div className="pt-2 pb-2 pl-4 pr-4 ">
+            <div className="mb-2 flex items-start justify-between">
+              <h2 className="font-semibold ">{slot.name}</h2>
+              <span
+                className={`rounded px-2 py-0.5 text-xs ${typeColors[slot.type] || 'bg-gray-100'}`}
+              >
+                {slot.type}
+              </span>
+            </div>
+
+            {slot.publisher && (
+              <p className="mb-2 text-sm text-[var(--color-muted)]">by {slot.publisher.name}</p>
+            )}
+
+            {slot.description && (
+              <p className="mb-3 text-sm text-[var(--color-muted)] line-clamp-2">
+                {slot.description}
+              </p>
+            )}
+
+            <div className="flex items-center">
+              <span
+                className={`text-sm ${slot.isAvailable ? 'text-green-600' : 'text-[var(--color-muted)]'}`}
+              >
+                {slot.isAvailable ? 'Available' : 'Booked'}
+              </span>
+            </div>
           </div>
         </Link>
       ))}

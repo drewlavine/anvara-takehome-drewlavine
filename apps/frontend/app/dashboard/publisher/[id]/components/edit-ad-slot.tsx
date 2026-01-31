@@ -330,14 +330,13 @@ export function EditAdSlot({ id }: { id: string }) {
               />
             </div>
 
+            <input type="hidden" name="publisherId" value={roleInfo?.publisherId || ''} />
+            <input type="hidden" name="id" value={id || ''} />
+          </div>
 
-              <input type="hidden" name="publisherId" value={roleInfo?.publisherId || ''} />
-              <input type="hidden" name="id" value={id || ''} />
-            </div>
-
-            <div className="flex gap-4 mt-1">
-              <SubmitButton isPending={isPending} />
-            </div>
+          <div className="flex gap-4 mt-1">
+            <SubmitButton isPending={isPending} />
+          </div>
         </form>
       </div>
     </div>
