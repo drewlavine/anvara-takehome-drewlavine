@@ -46,7 +46,7 @@ export function Nav() {
   }, []);
 
   return (
-    <header className="sticky top-0 z-50 bg-[var(--color-background)]/95 backdrop-blur-sm border-b border-[var(--color-border)]  shadow-(--header-shadow)">
+    <header className="sticky top-0 z-50 bg-(--color-background)/95 backdrop-blur-sm border-b border-[var(--color-border)]  shadow-(--header-shadow)">
       <nav className="mx-auto flex max-w-6xl items-center justify-between p-4">
         <Link href="/" className="text-xl font-bold text-[var(--color-primary)]">
           Anvara
@@ -55,7 +55,11 @@ export function Nav() {
         <div className="flex items-center gap-6">
           <Link
             href="/marketplace"
-            className={isActivePath('/marketplace') ? 'text-[var(--color-foreground)] font-semibold' : 'text-[var(--color-muted)] hover:text-[var(--color-foreground)]'}
+            className={
+              isActivePath('/marketplace')
+                ? 'text-[var(--color-foreground)] font-semibold'
+                : 'text-[var(--color-muted)] hover:text-[var(--color-foreground)]'
+            }
           >
             Marketplace
           </Link>
@@ -63,7 +67,11 @@ export function Nav() {
           {user && role === 'sponsor' && (
             <Link
               href="/dashboard/sponsor"
-              className={isActivePath('/dashboard/sponsor') ? 'text-[var(--color-foreground)] font-semibold' : 'text-[var(--color-muted)] hover:text-[var(--color-foreground)]'}
+              className={
+                isActivePath('/dashboard/sponsor')
+                  ? 'text-[var(--color-foreground)] font-semibold'
+                  : 'text-[var(--color-muted)] hover:text-[var(--color-foreground)]'
+              }
             >
               My Campaigns
             </Link>
@@ -71,7 +79,11 @@ export function Nav() {
           {user && role === 'publisher' && (
             <Link
               href="/dashboard/publisher"
-              className={isActivePath('/dashboard/publisher') ? 'text-[var(--color-foreground)] font-semibold' : 'text-[var(--color-muted)] hover:text-[var(--color-foreground)]'}
+              className={
+                isActivePath('/dashboard/publisher')
+                  ? 'text-[var(--color-foreground)] font-semibold'
+                  : 'text-[var(--color-muted)] hover:text-[var(--color-foreground)]'
+              }
             >
               My Ad Slots
             </Link>
@@ -87,7 +99,11 @@ export function Nav() {
           ) : (
             <Link
               href="/login"
-              className={isActivePath('/login') ? 'text-[var(--color-foreground)] font-semibold rounded bg-[var(--color-primary)] px-4 py-2 text-sm text-white' : 'rounded bg-[var(--color-primary)] px-4 py-2 text-sm text-white hover:bg-[var(--color-primary-hover)]'}
+              className={
+                isActivePath('/login')
+                  ? 'text-[var(--color-foreground)] font-semibold rounded bg-[var(--color-primary)] px-4 py-2 text-sm text-white'
+                  : 'rounded bg-[var(--color-primary)] px-4 py-2 text-sm text-white hover:bg-[var(--color-primary-hover)]'
+              }
             >
               Login
             </Link>
