@@ -7,19 +7,9 @@ import { useEffect } from 'react';
 import { redirect } from 'next/navigation';
 import { useFormContext } from '@/lib/form-context';
 import { authClient } from '@/auth-client';
+import { User, RoleInfo } from '@/lib/types';
 
-interface User {
-  id: string;
-  name: string;
-  email: string;
-}
 
-interface RoleInfo {
-  role: 'sponsor' | 'publisher' | null;
-  sponsorId?: string;
-  publisherId?: string;
-  name?: string;
-}
 function SubmitButton() {
   const { pending } = useFormStatus();
 

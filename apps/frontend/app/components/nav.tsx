@@ -1,24 +1,42 @@
+'use client';
+
 import Link from 'next/link';
-import { headers } from 'next/headers';
-import { auth } from '@/auth';
+import { useState, useEffect } from 'react';
+import { usePathname } from 'next/navigation';
 import { getUserRole } from '@/lib/auth-helpers';
 import LogoutButton from './logout-button';
+import { User } from '@/lib/types';
+import { authClient } from '@/auth-client';
 
-export async function Nav() {
-  let role,
-    user = null;
-  try {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
+export function Nav() {
+  const [role, setRole] = useState<string | null>(null);
+  const [user, setUser] = useState<User | null>(null);
 
-    user = session?.user || null;
-
-    const roleData = await getUserRole(user?.id || '');
-    role = roleData.role;
-  } catch (error) {
-    console.error('Error fetching user role in Nav:', error);
-  }
+  useEffect(() => {
+    authClient
+      .getSession()
+      .then(async ({ data }) => {
+        const sessionUser = data?.user as User | undefined;
+        if (sessionUser) {
+          setUser(sessionUser);
+          try {
+            const roleData = await getUserRole(sessionUser.id);
+            setRole(roleData.role ?? null);
+          } catch (err) {
+            console.error('Error fetching role:', err);
+            setRole(null);
+          }
+        } else {
+          setUser(null);
+          setRole(null);
+        }
+      })
+      .catch((err) => {
+        console.error('Error getting session:', err);
+        setUser(null);
+        setRole(null);
+      });
+  }, []);
 
   // TODO: Add active link styling using usePathname() from next/navigation
   // The current page's link should be highlighted differently
