@@ -1,4 +1,9 @@
 // Frontend utility functions
+import { StaticImageData } from 'next/image';
+import placeholder from '../assets/placeholder.png';
+import videoPlaceholder from '../assets/videoPlaceholder.webp';
+import newsletterPlaceholder from '../assets/newsletterPlaceholder.jpg';
+import displayPlaceholder from '../assets/displayPlaceholder.jpg';
 
 // Format a price for display
 export function formatPrice(price: number, locale = 'en-US'): string {
@@ -54,6 +59,19 @@ export const sleep = (ms: number): Promise<number> =>
 // NOTE: This doesn't handle circular references, dates, or functions
 export function deepClone<T>(obj: T): T {
   return JSON.parse(JSON.stringify(obj));
+}
+
+export function getImage(type: string): StaticImageData {
+  switch (type) {
+    case 'DISPLAY':
+      return displayPlaceholder;
+    case 'VIDEO':
+      return videoPlaceholder;
+    case 'NEWSLETTER':
+      return newsletterPlaceholder;
+    default:
+      return placeholder;
+  }
 }
 
 // Logger that only logs in development

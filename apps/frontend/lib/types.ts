@@ -69,3 +69,16 @@ export interface Session {
     userAgent?: string | null | undefined;
   };
 }
+
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+}
+
+export interface RoleInfo {
+  role: 'sponsor' | 'publisher' | null;
+  sponsorId?: string;
+  publisherId?: string;
+  name?: string;
+}
