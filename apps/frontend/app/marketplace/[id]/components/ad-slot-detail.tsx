@@ -109,7 +109,7 @@ export function AdSlotDetail({ id }: Props) {
           <AdSlotDetailMainCard adSlot={adSlot} />
         </div>
         <div className="lg:col-span-1">
-          <AdSlotBookingCard />
+          <AdSlotBookingCard adSlotId={adSlot.id} sponsorId={roleInfo?.sponsorId || ''} monthlyCost={adSlot.basePrice} />
         </div>
       </div>
       <div className="rounded-lg border border-[var(--color-border)] p-6">
