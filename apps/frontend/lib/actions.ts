@@ -253,3 +253,58 @@ export async function deleteAdSlot(id: string): Promise<ActionState> {
     };
   }
 }
+
+export async function bookAdSlot(
+  adSlotId: string,
+  sponsorId: string,
+  message?: string
+): Promise<ActionState> {
+  try {
+    if (!adSlotId || !sponsorId) {
+      return {
+        success: false,
+        error: 'Ad Slot ID and Sponsor ID are required',
+      };
+    }
+
+    await api<void>(`/api/ad-slots/${adSlotId}/book`, {
+      method: 'POST',
+      body: JSON.stringify({ sponsorId, message: message || undefined }),
+    });
+
+    revalidatePath('/marketplace');
+
+    return { success: true };
+  } catch (error) {
+    console.log('Error booking ad slot:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to book placement',
+    };
+  }
+}
+
+export async function unbookAdSlot(adSlotId: string): Promise<ActionState> {
+  try {
+    if (!adSlotId) {
+      return {
+        success: false,
+        error: 'Ad Slot ID is required',
+      };
+    }
+
+    await api<void>(`/api/ad-slots/${adSlotId}/unbook`, {
+      method: 'POST',
+    });
+
+    revalidatePath('/marketplace');
+
+    return { success: true };
+  } catch (error) {
+    console.log('Error unbooking ad slot:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to reset booking',
+    };
+  }
+}
