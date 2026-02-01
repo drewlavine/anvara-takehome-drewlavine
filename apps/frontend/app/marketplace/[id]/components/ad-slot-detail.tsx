@@ -2,35 +2,11 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { getMarketplaceAdSlot } from '@/lib/actions';
+import { getMarketplaceAdSlot, bookAdSlot, unbookAdSlot } from '@/lib/actions';
 import { authClient } from '@/auth-client';
-
-interface AdSlot {
-  id: string;
-  name: string;
-  description?: string;
-  type: string;
-  basePrice: number;
-  isAvailable: boolean;
-  publisher?: {
-    id: string;
-    name: string;
-    website?: string;
-  };
-}
-
-interface User {
-  id: string;
-  name: string;
-  email: string;
-}
-
-interface RoleInfo {
-  role: 'sponsor' | 'publisher' | null;
-  sponsorId?: string;
-  publisherId?: string;
-  name?: string;
-}
+import { AdSlotDetailMainCard } from './ad-slot-detail-main-card';
+import { AdSlot, User, RoleInfo } from '@/lib/types';
+import { AdSlotBookingCard } from './ad-slot-booking-card';
 
 const typeColors: Record<string, string> = {
   DISPLAY: 'bg-blue-100 text-blue-700',
@@ -92,21 +68,10 @@ export function AdSlotDetail({ id }: Props) {
     setBookingError(null);
 
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4291'}/api/ad-slots/${adSlot.id}/book`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            sponsorId: roleInfo.sponsorId,
-            message: message || undefined,
-          }),
-        }
-      );
+      const result = await bookAdSlot(adSlot.id, roleInfo.sponsorId, message || undefined);
 
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || 'Failed to book placement');
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to book placement');
       }
 
       setBookingSuccess(true);
@@ -122,16 +87,10 @@ export function AdSlotDetail({ id }: Props) {
     if (!adSlot) return;
 
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4291'}/api/ad-slots/${adSlot.id}/unbook`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-        }
-      );
+      const result = await unbookAdSlot(adSlot.id);
 
-      if (!response.ok) {
-        throw new Error('Failed to reset booking');
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to reset booking');
       }
 
       setBookingSuccess(false);
@@ -165,6 +124,14 @@ export function AdSlotDetail({ id }: Props) {
         ← Back to Marketplace
       </Link>
 
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-2 space-y-6">
+          <AdSlotDetailMainCard adSlot={adSlot} />
+        </div>
+        <div className="lg:col-span-1">
+          <AdSlotBookingCard />
+        </div>
+      </div>
       <div className="rounded-lg border border-[var(--color-border)] p-6">
         <div className="mb-4 flex items-start justify-between">
           <div>
