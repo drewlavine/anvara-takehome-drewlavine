@@ -61,28 +61,8 @@ export function AdSlotDetail({ id }: Props) {
       .catch(() => setRoleLoading(false));
   }, [id]);
 
-  const handleBooking = async () => {
-    if (!roleInfo?.sponsorId || !adSlot) return;
 
-    setBooking(true);
-    setBookingError(null);
-
-    try {
-      const result = await bookAdSlot(adSlot.id, roleInfo.sponsorId, message || undefined);
-
-      if (!result.success) {
-        throw new Error(result.error || 'Failed to book placement');
-      }
-
-      setBookingSuccess(true);
-      setAdSlot({ ...adSlot, isAvailable: false });
-    } catch (err) {
-      setBookingError(err instanceof Error ? err.message : 'Failed to book placement');
-    } finally {
-      setBooking(false);
-    }
-  };
-
+  // Purely for testing, hence no sponsorId param
   const handleUnbook = async () => {
     if (!adSlot) return;
 
@@ -221,7 +201,7 @@ export function AdSlotDetail({ id }: Props) {
                 </div>
                 {bookingError && <p className="text-sm text-red-600">{bookingError}</p>}
                 <button
-                  onClick={handleBooking}
+
                   disabled={booking}
                   className="w-full rounded-lg bg-[var(--color-primary)] px-4 py-3 font-semibold text-white transition-colors hover:opacity-90 disabled:opacity-50"
                 >
@@ -253,7 +233,7 @@ export function AdSlotDetail({ id }: Props) {
               Your request has been submitted. The publisher will be in touch soon.
             </p>
             <button
-              onClick={handleUnbook}
+
               className="mt-3 text-sm text-green-700 underline hover:text-green-800"
             >
               Remove Booking (reset for testing)

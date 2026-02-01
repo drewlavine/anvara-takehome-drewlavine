@@ -272,7 +272,7 @@ export async function bookAdSlot(
       body: JSON.stringify({ sponsorId, message: message || undefined }),
     });
 
-    revalidatePath('/marketplace');
+    revalidatePath(`/marketplace/${adSlotId}`);
 
     return { success: true };
   } catch (error) {
@@ -297,7 +297,7 @@ export async function unbookAdSlot(adSlotId: string): Promise<ActionState> {
       method: 'POST',
     });
 
-    revalidatePath('/marketplace');
+    revalidatePath(`/marketplace/${adSlotId}`);
 
     return { success: true };
   } catch (error) {
