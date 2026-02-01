@@ -42,7 +42,6 @@ export function CreateAdSlot() {
   const [roleInfo, setRoleInfo] = useState<RoleInfo | null>(null);
   const [isFormDirty, setIsFormDirty] = useState(false);
 
-
   useEffect(() => {
     authClient
       .getSession()

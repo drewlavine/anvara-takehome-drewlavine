@@ -2,7 +2,7 @@ import { JSX } from 'react';
 
 export function getIconByName(name: string, size: number = 4): JSX.Element | null {
   switch (name) {
-    case 'user':
+    case 'users':
       return (
         <svg
           xmlns="http://www.w3.org/2000/svg"

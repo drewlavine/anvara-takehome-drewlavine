@@ -14,7 +14,12 @@ export default function MarketplacePage() {
         <div className="mt-4">
           <form className="flex flex-col justify-between sm:flex-row sm:items-end gap-3">
             <div className="flex flex-col sm:w-150">
-              <label htmlFor="marketplace-search" className="mb-1 text-xs font-medium text-[var(--color-muted)]">Search</label>
+              <label
+                htmlFor="marketplace-search"
+                className="mb-1 text-xs font-medium text-[var(--color-muted)]"
+              >
+                Search
+              </label>
               <div className="relative">
                 <svg
                   className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-muted)] w-4 h-4"
@@ -24,7 +29,11 @@ export default function MarketplacePage() {
                   strokeWidth={1.5}
                   stroke="currentColor"
                 >
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16z" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M21 21l-4.35-4.35M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16z"
+                  />
                 </svg>
                 <input
                   id="marketplace-search"
@@ -37,8 +46,16 @@ export default function MarketplacePage() {
 
             <div className="flex gap-3">
               <div className="flex flex-col">
-                <label htmlFor="filter-type" className="mb-1 text-xs font-medium text-[var(--color-muted)]">Filter</label>
-                <select id="filter-type" className="rounded-md border border-[var(--color-border)] bg-white py-2 px-3 text-sm text-(--color-background)">
+                <label
+                  htmlFor="filter-type"
+                  className="mb-1 text-xs font-medium text-[var(--color-muted)]"
+                >
+                  Filter
+                </label>
+                <select
+                  id="filter-type"
+                  className="rounded-md border border-[var(--color-border)] bg-white py-2 px-3 text-sm text-(--color-background)"
+                >
                   <option value="">All types</option>
                   <option value="DISPLAY">Display</option>
                   <option value="VIDEO">Video</option>
@@ -48,8 +65,16 @@ export default function MarketplacePage() {
               </div>
 
               <div className="flex flex-col">
-                <label htmlFor="sort-by" className="mb-1 text-xs font-medium text-[var(--color-muted)]">Sort</label>
-                <select id="sort-by" className="rounded-md border border-[var(--color-border)] bg-white py-2 px-3 text-sm text-(--color-background)">
+                <label
+                  htmlFor="sort-by"
+                  className="mb-1 text-xs font-medium text-[var(--color-muted)]"
+                >
+                  Sort
+                </label>
+                <select
+                  id="sort-by"
+                  className="rounded-md border border-[var(--color-border)] bg-white py-2 px-3 text-sm text-(--color-background)"
+                >
                   <option value="relevance">Relevance</option>
                   <option value="price-asc">Price: Low → High</option>
                   <option value="price-desc">Price: High → Low</option>

@@ -22,8 +22,8 @@ export interface AdSlot {
   type: 'DISPLAY' | 'VIDEO' | 'NEWSLETTER' | 'PODCAST';
   basePrice: number;
   isAvailable: boolean;
-  publisherId: string;
-  publisher?: { id: string; name: string };
+  publisherId?: string;
+  publisher?: { id: string; name: string; website?: string };
 }
 
 export interface Placement {
