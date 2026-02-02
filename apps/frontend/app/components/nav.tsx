@@ -1,16 +1,12 @@
 'use client';
 
 import Link from 'next/link';
-import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
-import { getUserRole } from '@/lib/auth-helpers';
 import LogoutButton from './logout-button';
-import { User } from '@/lib/types';
-import { authClient } from '@/auth-client';
+import { useAuth } from '@/lib/auth-context';
 
 export function Nav() {
-  const [role, setRole] = useState<string | null>(null);
-  const [user, setUser] = useState<User | null>(null);
+  const { user, role } = useAuth();
   const pathname = usePathname();
 
   function isActivePath(path: string): boolean {
@@ -18,32 +14,6 @@ export function Nav() {
     if (path === '/') return pathname === '/';
     return pathname === path || pathname.startsWith(path + '/') || pathname.startsWith(path);
   }
-
-  useEffect(() => {
-    authClient
-      .getSession()
-      .then(async ({ data }) => {
-        const sessionUser = data?.user as User | undefined;
-        if (sessionUser) {
-          setUser(sessionUser);
-          try {
-            const roleData = await getUserRole(sessionUser.id);
-            setRole(roleData.role ?? null);
-          } catch (err) {
-            console.error('Error fetching role:', err);
-            setRole(null);
-          }
-        } else {
-          setUser(null);
-          setRole(null);
-        }
-      })
-      .catch((err) => {
-        console.error('Error getting session:', err);
-        setUser(null);
-        setRole(null);
-      });
-  }, []);
 
   return (
     <header className="sticky top-0 z-50 bg-(--color-background)/95 backdrop-blur-sm border-b border-[var(--color-border)]  shadow-(--header-shadow)">
