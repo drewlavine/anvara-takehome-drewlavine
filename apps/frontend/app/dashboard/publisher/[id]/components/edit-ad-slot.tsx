@@ -1,26 +1,13 @@
 'use client';
 
-import { useState, FormEvent, useRef } from 'react';
+import { useState, FormEvent } from 'react';
 import { getAdSlot, updateAdSlot, deleteAdSlot } from '@/lib/actions';
 import { useEffect } from 'react';
 import { redirect, useRouter } from 'next/navigation';
-import { authClient } from '@/auth-client';
+import { getUserRole } from '@/lib/auth-helpers';
 import CurrencyInput from 'react-currency-input-field';
 import { useFormContext } from '@/lib/form-context';
-
-interface AdSlot {
-  id: string;
-  name: string;
-  description?: string;
-  type: string;
-  basePrice: number;
-  isAvailable: boolean;
-  publisher?: {
-    id: string;
-    name: string;
-    website?: string;
-  };
-}
+import { authClient } from '@/auth-client';
 
 interface User {
   id: string;
@@ -33,17 +20,6 @@ interface RoleInfo {
   sponsorId?: string;
   publisherId?: string;
   name?: string;
-}
-
-const typeColors: Record<string, string> = {
-  DISPLAY: 'bg-blue-100 text-blue-700',
-  VIDEO: 'bg-red-100 text-red-700',
-  NEWSLETTER: 'bg-purple-100 text-purple-700',
-  PODCAST: 'bg-orange-100 text-orange-700',
-};
-
-interface Props {
-  id: string;
 }
 
 function SubmitButton({ isPending }: { isPending: boolean }) {
@@ -81,11 +57,8 @@ export function EditAdSlot({ id }: { id: string }) {
         if (data?.user) {
           const sessionUser = data.user as User;
 
-          // Fetch role info from backend
-          fetch(
-            `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4291'}/api/auth/role/${sessionUser.id}`
-          )
-            .then((res) => res.json())
+          // Fetch role info from backend using getUserRole
+          getUserRole(sessionUser.id)
             .then((data) => setRoleInfo(data))
             .catch(() => setRoleInfo(null));
         } else {
@@ -98,8 +71,7 @@ export function EditAdSlot({ id }: { id: string }) {
   useEffect(() => {
     getAdSlot(id)
       .then((data) => {
-        console.log('campaignData', data);
-        // Initialize form fields with campaign data
+        console.log('adSlotData', data);
         setName(data.name || '');
         setDescription(data.description || '');
         setBasePrice(data.basePrice?.toString() || '');

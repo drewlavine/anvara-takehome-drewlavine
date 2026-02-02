@@ -4,6 +4,7 @@ import { useState, FormEvent } from 'react';
 import { getCampaign, updateCampaign, deleteCampaign } from '@/lib/actions';
 import { useEffect } from 'react';
 import { redirect, useRouter } from 'next/navigation';
+import { getUserRole } from '@/lib/auth-helpers';
 import { authClient } from '@/auth-client';
 import { dateToLocalISOString } from '@/lib/utils';
 import CurrencyInput from 'react-currency-input-field';
@@ -58,11 +59,8 @@ export function EditCampaign({ id }: { id: string }) {
         if (data?.user) {
           const sessionUser = data.user as User;
 
-          // Fetch role info from backend
-          fetch(
-            `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4291'}/api/auth/role/${sessionUser.id}`
-          )
-            .then((res) => res.json())
+          // Fetch role info from backend using getUserRole
+          getUserRole(sessionUser.id)
             .then((data) => setRoleInfo(data))
             .catch(() => setRoleInfo(null));
         } else {

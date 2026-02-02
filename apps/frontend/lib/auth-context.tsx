@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { User } from '@/lib/types';
 import { authClient } from '@/auth-client';
 import { getUserRole } from '@/lib/auth-helpers';
@@ -9,12 +9,14 @@ interface AuthContextType {
   user: User | null;
   role: string | null;
   loading: boolean;
+  setUser: (user: User | null) => void;
+  setRole: (role: string | null) => void;
   refreshAuth: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
+export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [role, setRole] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -30,7 +32,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           const roleData = await getUserRole(sessionUser.id);
           setRole(roleData.role ?? null);
         } catch (err) {
-          console.error('Error fetching role:', err);
           setRole(null);
         }
       } else {
@@ -38,7 +39,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setRole(null);
       }
     } catch (err) {
-      console.error('Error getting session:', err);
       setUser(null);
       setRole(null);
     } finally {
@@ -46,17 +46,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  // Only check auth status on mount
   useEffect(() => {
     refreshAuth();
-
-    // Poll for auth changes every 1 second
-    const interval = setInterval(refreshAuth, 1000);
-
-    return () => clearInterval(interval);
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, role, loading, refreshAuth }}>
+    <AuthContext.Provider
+      value={{ user, role, loading, setUser, setRole, refreshAuth }}
+    >
       {children}
     </AuthContext.Provider>
   );
