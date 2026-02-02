@@ -4,24 +4,10 @@ import { useState, FormEvent } from 'react';
 import { getCampaign, updateCampaign, deleteCampaign } from '@/lib/actions';
 import { useEffect } from 'react';
 import { redirect, useRouter } from 'next/navigation';
-import { getUserRole } from '@/lib/auth-helpers';
-import { authClient } from '@/auth-client';
+import { useAuth } from '@/lib/auth-context';
 import { dateToLocalISOString } from '@/lib/utils';
 import CurrencyInput from 'react-currency-input-field';
 import { useFormContext } from '@/lib/form-context';
-
-interface User {
-  id: string;
-  name: string;
-  email: string;
-}
-
-interface RoleInfo {
-  role: 'sponsor' | 'publisher' | null;
-  sponsorId?: string;
-  publisherId?: string;
-  name?: string;
-}
 
 function SubmitButton({ isPending }: { isPending: boolean }) {
   return (
@@ -38,7 +24,6 @@ function SubmitButton({ isPending }: { isPending: boolean }) {
 export function EditCampaign({ id }: { id: string }) {
   const [isPending, setIsPending] = useState(false);
   const { setCampaignDeleteSuccess } = useFormContext();
-  const [roleInfo, setRoleInfo] = useState<RoleInfo | null>(null);
   const [isFormDirty, setIsFormDirty] = useState(false);
   const [showSuccessNotification, setShowSuccessNotification] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
@@ -51,24 +36,13 @@ export function EditCampaign({ id }: { id: string }) {
   const [endDate, setEndDate] = useState('');
 
   const router = useRouter();
+  const { sponsorId, loading } = useAuth();
 
   useEffect(() => {
-    authClient
-      .getSession()
-      .then(({ data }) => {
-        if (data?.user) {
-          const sessionUser = data.user as User;
-
-          // Fetch role info from backend using getUserRole
-          getUserRole(sessionUser.id)
-            .then((data) => setRoleInfo(data))
-            .catch(() => setRoleInfo(null));
-        } else {
-          redirect('/login');
-        }
-      })
-      .catch(() => redirect('/login'));
-  }, []);
+    if (!loading && !sponsorId) {
+      redirect('/login');
+    }
+  }, [sponsorId, loading]);
 
   useEffect(() => {
     getCampaign(id)
@@ -109,7 +83,7 @@ export function EditCampaign({ id }: { id: string }) {
       formData.append('budget', budget);
       formData.append('startDate', startDate);
       formData.append('endDate', endDate);
-      formData.append('sponsorId', roleInfo?.sponsorId || '');
+      formData.append('sponsorId', sponsorId || '');
 
       const result = await updateCampaign(formData);
 
@@ -274,7 +248,7 @@ export function EditCampaign({ id }: { id: string }) {
                 placeholder="Enter a budget amount"
                 required
               />
-              <input type="hidden" name="sponsorId" value={roleInfo?.sponsorId || ''} />
+              <input type="hidden" name="sponsorId" value={sponsorId || ''} />
             </div>
             <div className="flex grow  w-full gap-4 justify-between">
               <div className="grow w-full">
@@ -311,7 +285,7 @@ export function EditCampaign({ id }: { id: string }) {
                   required
                 />
               </div>
-              <input type="hidden" name="sponsorId" value={roleInfo?.sponsorId || ''} />
+              <input type="hidden" name="sponsorId" value={sponsorId || ''} />
               <input type="hidden" name="id" value={id || ''} />
             </div>
 

@@ -6,22 +6,9 @@ import { useFormStatus } from 'react-dom';
 import { useEffect } from 'react';
 import { redirect } from 'next/navigation';
 import { useFormContext } from '@/lib/form-context';
-import { getUserRole } from '@/lib/auth-helpers';
-import { authClient } from '@/auth-client';
+import { useAuth } from '@/lib/auth-context';
 import CurrencyInput from 'react-currency-input-field';
 
-interface User {
-  id: string;
-  name: string;
-  email: string;
-}
-
-interface RoleInfo {
-  role: 'sponsor' | 'publisher' | null;
-  sponsorId?: string;
-  publisherId?: string;
-  name?: string;
-}
 function SubmitButton() {
   const { pending } = useFormStatus();
 
@@ -39,27 +26,16 @@ function SubmitButton() {
 export function CreateAdSlot() {
   const [state, formAction] = useActionState(createAdSlot, {});
   const { setAdSlotFormSuccess } = useFormContext();
+  const { publisherId, loading } = useAuth();
   const selectRef = useRef<HTMLSelectElement>(null);
-  const [roleInfo, setRoleInfo] = useState<RoleInfo | null>(null);
   const [isFormDirty, setIsFormDirty] = useState(false);
 
+  // Redirect if not logged in
   useEffect(() => {
-    authClient
-      .getSession()
-      .then(({ data }) => {
-        if (data?.user) {
-          const sessionUser = data.user as User;
-
-          // Fetch role info from backend using getUserRole
-          getUserRole(sessionUser.id)
-            .then((data) => setRoleInfo(data))
-            .catch(() => setRoleInfo(null));
-        } else {
-          redirect('/login');
-        }
-      })
-      .catch(() => redirect('/login'));
-  }, []);
+    if (!loading && !publisherId) {
+      redirect('/login');
+    }
+  }, [publisherId, loading]);
 
   useEffect(() => {
     if (state?.error && state.formData?.get('type')) {
@@ -166,7 +142,7 @@ export function CreateAdSlot() {
                 allowNegativeValue={false}
                 required
               />
-              <input type="hidden" name="publisherId" value={roleInfo?.publisherId || ''} />
+              <input type="hidden" name="publisherId" value={publisherId || ''} />
             </div>
 
             <SubmitButton />

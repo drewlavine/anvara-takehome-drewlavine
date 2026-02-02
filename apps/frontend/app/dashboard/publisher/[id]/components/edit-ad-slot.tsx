@@ -4,23 +4,9 @@ import { useState, FormEvent } from 'react';
 import { getAdSlot, updateAdSlot, deleteAdSlot } from '@/lib/actions';
 import { useEffect } from 'react';
 import { redirect, useRouter } from 'next/navigation';
-import { getUserRole } from '@/lib/auth-helpers';
 import CurrencyInput from 'react-currency-input-field';
 import { useFormContext } from '@/lib/form-context';
-import { authClient } from '@/auth-client';
-
-interface User {
-  id: string;
-  name: string;
-  email: string;
-}
-
-interface RoleInfo {
-  role: 'sponsor' | 'publisher' | null;
-  sponsorId?: string;
-  publisherId?: string;
-  name?: string;
-}
+import { useAuth } from '@/lib/auth-context';
 
 function SubmitButton({ isPending }: { isPending: boolean }) {
   return (
@@ -37,7 +23,7 @@ function SubmitButton({ isPending }: { isPending: boolean }) {
 export function EditAdSlot({ id }: { id: string }) {
   const [isPending, setIsPending] = useState(false);
   const { setAdSlotDeleteSuccess } = useFormContext();
-  const [roleInfo, setRoleInfo] = useState<RoleInfo | null>(null);
+  const { publisherId, loading } = useAuth();
   const [isFormDirty, setIsFormDirty] = useState(false);
   const [showSuccessNotification, setShowSuccessNotification] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
@@ -50,23 +36,12 @@ export function EditAdSlot({ id }: { id: string }) {
 
   const router = useRouter();
 
+  // Redirect if not logged in
   useEffect(() => {
-    authClient
-      .getSession()
-      .then(({ data }) => {
-        if (data?.user) {
-          const sessionUser = data.user as User;
-
-          // Fetch role info from backend using getUserRole
-          getUserRole(sessionUser.id)
-            .then((data) => setRoleInfo(data))
-            .catch(() => setRoleInfo(null));
-        } else {
-          redirect('/login');
-        }
-      })
-      .catch(() => redirect('/login'));
-  }, []);
+    if (!loading && !publisherId) {
+      redirect('/login');
+    }
+  }, [publisherId, loading]);
 
   useEffect(() => {
     getAdSlot(id)
@@ -104,7 +79,7 @@ export function EditAdSlot({ id }: { id: string }) {
       formData.append('description', description);
       formData.append('basePrice', basePrice);
       formData.append('type', type);
-      formData.append('publisherId', roleInfo?.publisherId || '');
+      formData.append('publisherId', publisherId || '');
 
       const result = await updateAdSlot(formData);
 
@@ -302,7 +277,7 @@ export function EditAdSlot({ id }: { id: string }) {
               />
             </div>
 
-            <input type="hidden" name="publisherId" value={roleInfo?.publisherId || ''} />
+            <input type="hidden" name="publisherId" value={publisherId || ''} />
             <input type="hidden" name="id" value={id || ''} />
           </div>
 

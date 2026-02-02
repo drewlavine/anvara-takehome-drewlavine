@@ -3,9 +3,9 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { getMarketplaceAdSlot } from '@/lib/actions';
-import { authClient } from '@/auth-client';
+import { useAuth } from '@/lib/auth-context';
 import { AdSlotDetailMainCard } from './ad-slot-detail-main-card';
-import { AdSlot, User, RoleInfo } from '@/lib/types';
+import { AdSlot } from '@/lib/types';
 import { AdSlotDetailBookingCard } from './ad-slot-detail-booking-card';
 import { AdSlotDetailAudienceInsights } from './ad-slot-detail-audience-insights';
 
@@ -17,8 +17,7 @@ export function AdSlotDetail({ id }: Props) {
   const [adSlot, setAdSlot] = useState<AdSlot | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [user, setUser] = useState<User | null>(null);
-  const [roleInfo, setRoleInfo] = useState<RoleInfo | null>(null);
+  const { user, sponsorId } = useAuth();
 
   useEffect(() => {
     // Fetch ad slot using public marketplace endpoint (no auth required)
@@ -26,28 +25,6 @@ export function AdSlotDetail({ id }: Props) {
       .then(setAdSlot)
       .catch(() => setError('Failed to load ad slot details'))
       .finally(() => setLoading(false));
-
-    // Check user session and fetch role
-    authClient
-      .getSession()
-      .then(({ data }) => {
-        if (data?.user) {
-          const sessionUser = data.user as User;
-          setUser(sessionUser);
-
-          // Fetch role info from backend
-          fetch(
-            `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4291'}/api/auth/role/${sessionUser.id}`
-          )
-            .then((res) => res.json())
-            .then((data) => setRoleInfo(data))
-            .catch(() => setRoleInfo(null))
-            .finally(() => setLoading(false));
-        } else {
-          setLoading(false);
-        }
-      })
-      .catch(() => setLoading(false));
   }, [id]);
 
   if (loading) {
@@ -81,7 +58,7 @@ export function AdSlotDetail({ id }: Props) {
         <div className="lg:col-span-1">
           <AdSlotDetailBookingCard
             adSlotId={adSlot.id}
-            sponsorId={roleInfo?.sponsorId || ''}
+            sponsorId={sponsorId || ''}
             monthlyCost={adSlot.basePrice}
             name={user?.name || ''}
           />
