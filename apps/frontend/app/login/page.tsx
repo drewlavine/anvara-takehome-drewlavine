@@ -4,11 +4,14 @@ import React from 'react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { authClient } from '@/auth-client';
+import { useAuth } from '@/lib/auth-context';
+import { getUserRole } from '@/lib/auth-helpers';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4291';
 
 export default function LoginPage() {
   const router = useRouter();
+  const { setUser, setRole: setContextRole } = useAuth();
   const [role, setRole] = useState<'sponsor' | 'publisher'>('sponsor');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -33,12 +36,18 @@ export default function LoginPage() {
           setLoading(true);
         },
         onSuccess: async (ctx) => {
-          // Fetch user role to determine redirect
+          // Update AuthContext with user data
           try {
             const userId = ctx.data?.user?.id;
             if (userId) {
-              const roleRes = await fetch(`${API_URL}/api/auth/role/${userId}`);
-              const roleData = await roleRes.json();
+              // Update context with user
+              setUser(ctx.data?.user as any);
+
+              // Fetch and set role in context
+              const roleData = await getUserRole(userId);
+              setContextRole(roleData.role ?? null);
+
+              // Redirect based on role
               if (roleData.role === 'sponsor') {
                 router.push('/dashboard/sponsor');
               } else if (roleData.role === 'publisher') {
@@ -49,9 +58,7 @@ export default function LoginPage() {
             } else {
               router.push('/');
             }
-            // Refresh to update any server components relying on auth state
-            router.refresh();
-          } catch {
+          } catch (err) {
             router.push('/');
           }
         },

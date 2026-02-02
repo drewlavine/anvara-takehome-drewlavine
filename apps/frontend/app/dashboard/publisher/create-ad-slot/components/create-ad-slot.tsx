@@ -6,20 +6,9 @@ import { useFormStatus } from 'react-dom';
 import { useEffect } from 'react';
 import { redirect } from 'next/navigation';
 import { useFormContext } from '@/lib/form-context';
-import { authClient } from '@/auth-client';
+import { useAuth } from '@/lib/auth-context';
+import CurrencyInput from 'react-currency-input-field';
 
-interface User {
-  id: string;
-  name: string;
-  email: string;
-}
-
-interface RoleInfo {
-  role: 'sponsor' | 'publisher' | null;
-  sponsorId?: string;
-  publisherId?: string;
-  name?: string;
-}
 function SubmitButton() {
   const { pending } = useFormStatus();
 
@@ -37,30 +26,16 @@ function SubmitButton() {
 export function CreateAdSlot() {
   const [state, formAction] = useActionState(createAdSlot, {});
   const { setAdSlotFormSuccess } = useFormContext();
+  const { publisherId, loading } = useAuth();
   const selectRef = useRef<HTMLSelectElement>(null);
-  const [roleInfo, setRoleInfo] = useState<RoleInfo | null>(null);
   const [isFormDirty, setIsFormDirty] = useState(false);
 
+  // Redirect if not logged in
   useEffect(() => {
-    authClient
-      .getSession()
-      .then(({ data }) => {
-        if (data?.user) {
-          const sessionUser = data.user as User;
-
-          // Fetch role info from backend
-          fetch(
-            `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4291'}/api/auth/role/${sessionUser.id}`
-          )
-            .then((res) => res.json())
-            .then((data) => setRoleInfo(data))
-            .catch(() => setRoleInfo(null));
-        } else {
-          redirect('/login');
-        }
-      })
-      .catch(() => redirect('/login'));
-  }, []);
+    if (!loading && !publisherId) {
+      redirect('/login');
+    }
+  }, [publisherId, loading]);
 
   useEffect(() => {
     if (state?.error && state.formData?.get('type')) {
@@ -94,15 +69,14 @@ export function CreateAdSlot() {
       <button onClick={handleBack} className="text-[var(--color-primary)] hover:underline">
         ← Back to Ad Slots
       </button>
-
-      <div className="rounded-lg bg-(--color-background) border border-[var(--color-border)] p-6 w-1/2 ">
+      <div className="flex flex-col rounded-lg bg-(--color-background) border border-[var(--color-border)] p-6 w-full ">
         <div className="mb-4">
           <h1 className="text-2xl font-bold">Create Ad Slot</h1>
         </div>
         <form action={formAction}>
           <div className="mb-2 flex flex-col items-start justify-between space-y-4">
             <div className="grow  w-full">
-              <label className="block text-sm/6 font-medium text-white" htmlFor="name">
+              <label className="block text-md font-semibold text-white mb-1" htmlFor="name">
                 Ad Slot Name*
               </label>
               <input
@@ -111,6 +85,7 @@ export function CreateAdSlot() {
                 name="name"
                 defaultValue={(state.formData?.get('name') as string) || ''}
                 onChange={(e) => setIsFormDirty(e.target.value !== '')}
+                placeholder="Enter an ad slot name"
                 required
               />
             </div>
@@ -119,10 +94,11 @@ export function CreateAdSlot() {
                 Description
               </label>
               <textarea
-                className="rounded-lg bg-(--color-foreground) border border-[var(--color-border)] placeholder:text-gray-400 text-sm border-slate-200 px-3 py-3 w-full"
+                className="rounded-lg bg-(--color-foreground) border border-[var(--color-border)]  placeholder:text-gray-400 text-gray-900 text-sm border-slate-200 px-3 py-2 w-full"
                 name="description"
                 defaultValue={(state.formData?.get('description') as string) || ''}
                 onChange={(e) => setIsFormDirty(e.target.value !== '')}
+                placeholder="Enter an ad slot description"
               />
             </div>
             <div className="grow  w-full">
@@ -156,16 +132,17 @@ export function CreateAdSlot() {
               <label className="block text-md font-semibold text-white mb-1" htmlFor="basePrice">
                 Base Price*
               </label>
-              <input
+              <CurrencyInput
                 className="rounded-lg bg-(--color-foreground) border border-[var(--color-border)] placeholder:text-gray-400 text-gray-900 text-sm border-slate-200 px-3 py-2 w-full"
-                type="number"
-                inputMode="decimal"
                 name="basePrice"
                 defaultValue={(state.formData?.get('basePrice') as unknown as number) || undefined}
-                onChange={(e) => setIsFormDirty(e.target.value !== '')}
+                onValueChange={(value) => setIsFormDirty(value !== '')}
+                prefix="$"
+                placeholder="Enter a base price amount"
+                allowNegativeValue={false}
                 required
               />
-              <input type="hidden" name="publisherId" value={roleInfo?.publisherId || ''} />
+              <input type="hidden" name="publisherId" value={publisherId || ''} />
             </div>
 
             <SubmitButton />

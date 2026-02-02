@@ -1,50 +1,12 @@
 'use client';
 
-import { useState, FormEvent, useRef } from 'react';
+import { useState, FormEvent } from 'react';
 import { getAdSlot, updateAdSlot, deleteAdSlot } from '@/lib/actions';
 import { useEffect } from 'react';
 import { redirect, useRouter } from 'next/navigation';
-import { authClient } from '@/auth-client';
 import CurrencyInput from 'react-currency-input-field';
 import { useFormContext } from '@/lib/form-context';
-
-interface AdSlot {
-  id: string;
-  name: string;
-  description?: string;
-  type: string;
-  basePrice: number;
-  isAvailable: boolean;
-  publisher?: {
-    id: string;
-    name: string;
-    website?: string;
-  };
-}
-
-interface User {
-  id: string;
-  name: string;
-  email: string;
-}
-
-interface RoleInfo {
-  role: 'sponsor' | 'publisher' | null;
-  sponsorId?: string;
-  publisherId?: string;
-  name?: string;
-}
-
-const typeColors: Record<string, string> = {
-  DISPLAY: 'bg-blue-100 text-blue-700',
-  VIDEO: 'bg-red-100 text-red-700',
-  NEWSLETTER: 'bg-purple-100 text-purple-700',
-  PODCAST: 'bg-orange-100 text-orange-700',
-};
-
-interface Props {
-  id: string;
-}
+import { useAuth } from '@/lib/auth-context';
 
 function SubmitButton({ isPending }: { isPending: boolean }) {
   return (
@@ -61,7 +23,7 @@ function SubmitButton({ isPending }: { isPending: boolean }) {
 export function EditAdSlot({ id }: { id: string }) {
   const [isPending, setIsPending] = useState(false);
   const { setAdSlotDeleteSuccess } = useFormContext();
-  const [roleInfo, setRoleInfo] = useState<RoleInfo | null>(null);
+  const { publisherId, loading } = useAuth();
   const [isFormDirty, setIsFormDirty] = useState(false);
   const [showSuccessNotification, setShowSuccessNotification] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
@@ -74,32 +36,17 @@ export function EditAdSlot({ id }: { id: string }) {
 
   const router = useRouter();
 
+  // Redirect if not logged in
   useEffect(() => {
-    authClient
-      .getSession()
-      .then(({ data }) => {
-        if (data?.user) {
-          const sessionUser = data.user as User;
-
-          // Fetch role info from backend
-          fetch(
-            `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4291'}/api/auth/role/${sessionUser.id}`
-          )
-            .then((res) => res.json())
-            .then((data) => setRoleInfo(data))
-            .catch(() => setRoleInfo(null));
-        } else {
-          redirect('/login');
-        }
-      })
-      .catch(() => redirect('/login'));
-  }, []);
+    if (!loading && !publisherId) {
+      redirect('/login');
+    }
+  }, [publisherId, loading]);
 
   useEffect(() => {
     getAdSlot(id)
       .then((data) => {
-        console.log('campaignData', data);
-        // Initialize form fields with campaign data
+        console.log('adSlotData', data);
         setName(data.name || '');
         setDescription(data.description || '');
         setBasePrice(data.basePrice?.toString() || '');
@@ -132,7 +79,7 @@ export function EditAdSlot({ id }: { id: string }) {
       formData.append('description', description);
       formData.append('basePrice', basePrice);
       formData.append('type', type);
-      formData.append('publisherId', roleInfo?.publisherId || '');
+      formData.append('publisherId', publisherId || '');
 
       const result = await updateAdSlot(formData);
 
@@ -330,14 +277,13 @@ export function EditAdSlot({ id }: { id: string }) {
               />
             </div>
 
+            <input type="hidden" name="publisherId" value={publisherId || ''} />
+            <input type="hidden" name="id" value={id || ''} />
+          </div>
 
-              <input type="hidden" name="publisherId" value={roleInfo?.publisherId || ''} />
-              <input type="hidden" name="id" value={id || ''} />
-            </div>
-
-            <div className="flex gap-4 mt-1">
-              <SubmitButton isPending={isPending} />
-            </div>
+          <div className="flex gap-4 mt-1">
+            <SubmitButton isPending={isPending} />
+          </div>
         </form>
       </div>
     </div>

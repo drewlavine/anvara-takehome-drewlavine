@@ -6,21 +6,11 @@ import { useFormStatus } from 'react-dom';
 import { useEffect } from 'react';
 import { redirect } from 'next/navigation';
 import { useFormContext } from '@/lib/form-context';
-import { authClient } from '@/auth-client';
+import { useAuth } from '@/lib/auth-context';
 import CurrencyInput from 'react-currency-input-field';
 
-interface User {
-  id: string;
-  name: string;
-  email: string;
-}
+interface SubmitButtonProps {}
 
-interface RoleInfo {
-  role: 'sponsor' | 'publisher' | null;
-  sponsorId?: string;
-  publisherId?: string;
-  name?: string;
-}
 function SubmitButton() {
   const { pending } = useFormStatus();
 
@@ -38,29 +28,15 @@ function SubmitButton() {
 export function CreateCampaign() {
   const [state, formAction] = useActionState(createCampaign, {});
   const { setCampaignFormSuccess } = useFormContext();
-  const [roleInfo, setRoleInfo] = useState<RoleInfo | null>(null);
+  const { user, sponsorId, loading } = useAuth();
   const [isFormDirty, setIsFormDirty] = useState(false);
 
+  // Redirect if not logged in or not a sponsor
   useEffect(() => {
-    authClient
-      .getSession()
-      .then(({ data }) => {
-        if (data?.user) {
-          const sessionUser = data.user as User;
-
-          // Fetch role info from backend
-          fetch(
-            `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4291'}/api/auth/role/${sessionUser.id}`
-          )
-            .then((res) => res.json())
-            .then((data) => setRoleInfo(data))
-            .catch(() => setRoleInfo(null));
-        } else {
-          redirect('/login');
-        }
-      })
-      .catch(() => redirect('/login'));
-  }, []);
+    if (!loading && !user) {
+      redirect('/login');
+    }
+  }, [user, loading]);
 
   useEffect(() => {
     if (state?.success) {
@@ -136,7 +112,7 @@ export function CreateCampaign() {
                 required
               />
 
-              <input type="hidden" name="sponsorId" value={roleInfo?.sponsorId || ''} />
+              <input type="hidden" name="sponsorId" value={sponsorId || ''} />
             </div>
             <div className="flex grow w-full gap-4 justify-between">
               <div className="grow w-full">
@@ -149,6 +125,7 @@ export function CreateCampaign() {
                   name="startDate"
                   defaultValue={(state.formData?.get('startDate') as string) || ''}
                   onChange={(e) => setIsFormDirty(e.target.value !== '')}
+                  min={new Date().toISOString().split('T')[0]}
                   required
                 />
               </div>
@@ -162,10 +139,11 @@ export function CreateCampaign() {
                   name="endDate"
                   defaultValue={(state.formData?.get('endDate') as string) || ''}
                   onChange={(e) => setIsFormDirty(e.target.value !== '')}
+                  min={new Date().toISOString().split('T')[0]}
                   required
                 />
               </div>
-              <input type="hidden" name="publisherId" value={roleInfo?.publisherId || ''} />
+              <input type="hidden" name="sponsorId" value={sponsorId || ''} />
             </div>
 
             <SubmitButton />

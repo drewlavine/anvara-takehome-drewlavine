@@ -30,6 +30,8 @@
   --color-warning: #f59e0b;
   --color-error: #ef4444;
 
+  --header-shadow: 0 2px 6px 0 rgba(0, 0, 0, 0.45);
+
   /* Spacing */
   --spacing-container: 1rem;
 }

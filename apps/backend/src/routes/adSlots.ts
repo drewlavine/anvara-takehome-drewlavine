@@ -40,7 +40,9 @@ router.get('/marketplace/:id', async (req: Request, res: Response) => {
     const adSlot = await prisma.adSlot.findUnique({
       where: { id },
       include: {
-        publisher: { select: { id: true, name: true, website: true, category: true, monthlyViews: true } },
+        publisher: {
+          select: { id: true, name: true, website: true, category: true, monthlyViews: true },
+        },
       },
     });
 
@@ -169,7 +171,7 @@ router.post('/', requireAuth, async (req: AuthRequest, res: Response) => {
 
 // POST /api/ad-slots/:id/book - Book an ad slot (simplified booking flow)
 // This marks the slot as unavailable and creates a simple booking record
-router.post('/:id/book', async (req: Request, res: Response) => {
+router.post('/:id/book', requireAuth, async (req: AuthRequest, res: Response) => {
   try {
     const id = getParam(req.params.id);
     const { sponsorId, message } = req.body;
@@ -220,7 +222,7 @@ router.post('/:id/book', async (req: Request, res: Response) => {
 });
 
 // POST /api/ad-slots/:id/unbook - Reset ad slot to available (for testing)
-router.post('/:id/unbook', async (req: Request, res: Response) => {
+router.post('/:id/unbook', requireAuth, async (req: AuthRequest, res: Response) => {
   try {
     // After looking through all of the code, I came to the conclusion that a string[] will never be passed, so I chose to do an inline type assertion
     const { id } = req.params as { id: string };
