@@ -1,6 +1,5 @@
 import { useState } from 'react';
-import { bookAdSlot, unbookAdSlot } from '@/lib/actions';
-import { set } from 'better-auth';
+import { bookAdSlot } from '@/lib/actions';
 import Link from 'next/link';
 
 export function AdSlotDetailBookingCard({
@@ -38,23 +37,6 @@ export function AdSlotDetailBookingCard({
       setBookingError(error instanceof Error ? error.message : 'Failed to book placement');
     } finally {
       setBooking(false);
-    }
-  };
-
-  const handleUnbooking = async () => {
-    if (!adSlotId) return;
-
-    try {
-      const result = await unbookAdSlot(adSlotId);
-
-      if (!result.success) {
-        throw new Error(result.error || 'Failed to unbook');
-      }
-
-      setBookingSuccess(false);
-    } catch (error) {
-      console.log('Failed to unbook:', error);
-      setBookingError(error instanceof Error ? error.message : 'Failed to unbook');
     }
   };
 
